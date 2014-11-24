@@ -1,0 +1,5 @@
+Exit Codes:
+0: Program was exited properly
+1: LWJGLException while creating display
+2: IOException while loading resources
+3: Shader were not initialized correctly
