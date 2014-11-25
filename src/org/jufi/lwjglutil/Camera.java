@@ -80,30 +80,49 @@ public class Camera {
 		glLight(GL_LIGHT0, GL_POSITION, lightpos);
 	}
 	
-	public void moveY(boolean dir, float amount) {
-		float otz = tz;
-		float oty = ty;
+	public void moveY(boolean zdir, float amount) {
 		float otx = tx;
-		if (dir) {
-			tx -= amount * MathLookup.cos(90 - ry) * MathLookup.cos(rx);
+		float oty = ty;
+		float otz = tz;
+		if (zdir) {
+			tx -= amount * MathLookup.sin(ry) * MathLookup.cos(rx);
 			ty += amount * MathLookup.sin(rx);
-			tz -= amount * MathLookup.sin(90 - ry) * MathLookup.cos(rx);
+			tz -= amount * MathLookup.cos(ry) * MathLookup.cos(rx);
 		} else {
 			tx -= amount * MathLookup.cos(-ry);
-			tz -= amount * MathLookup.sin(-ry);
+			tz += amount * MathLookup.sin(ry);
 		}
 		if (physics && ppmap.collides(tx, ty, tz) && !ppmap.collides(otx, oty, otz)) {
+			tx = otx;
+			ty = oty;
+			tz = otz;
+		}
+	}
+	public void moveNoY(boolean zdir, float amount) {
+		float otx = tx;
+		float otz = tz;
+		if (zdir) {
+			tx -= amount * MathLookup.sin(ry);
+			tz -= amount * MathLookup.cos(ry);
+		} else {
+			tx -= amount * MathLookup.cos(-ry);
+			tz += amount * MathLookup.sin(ry);
+		}
+		if (physics && ppmap.collides(tx, ty, tz) && !ppmap.collides(otx, ty, otz)) {
 			tx = otx;
 			tz = otz;
 		}
 	}
-	public void moveNoY(float dir, float amount) {
-		float otz = tz;
+	public void moveInDir(float rx, float ry, float amount) {
 		float otx = tx;
-		tz -= amount * MathLookup.sin(-ry + 90 * dir);
-		tx -= amount * MathLookup.cos(-ry + 90 * dir);
-		if (physics && ppmap.collides(tx, ty, tz) && !ppmap.collides(otx, ty, otz)) {
+		float oty = ty;
+		float otz = tz;
+		tx -= amount * MathLookup.sin(ry) * MathLookup.cos(rx);
+		ty += amount * MathLookup.sin(rx);
+		tz -= amount * MathLookup.cos(ry) * MathLookup.cos(rx);
+		if (physics && ppmap.collides(tx, ty, tz) && !ppmap.collides(otx, oty, otz)) {
 			tx = otx;
+			ty = oty;
 			tz = otz;
 		}
 	}
@@ -140,7 +159,7 @@ public class Camera {
 	public void init3d() {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		gluPerspective(fov, (float)Display.getWidth() / Display.getHeight(), znear, zfar);
+		gluPerspective(fov, (float) Display.getWidth() / Display.getHeight(), znear, zfar);
 		glMatrixMode(GL_MODELVIEW);
 		glEnable(GL_DEPTH_TEST);
 	}
@@ -164,7 +183,7 @@ public class Camera {
 		icon[1] = ResourceLoader.loadTextureIntoByteBuffer(System.getProperty("user.dir") + "/res/img/icon32.png");
 		Display.setIcon(icon);
 		
-		Display.create(new PixelFormat(8, 8, 0, 8));
+		Display.create(new PixelFormat(8, 24, 0, 16));
 	}
 	
 	public void cleanup() {
@@ -181,8 +200,8 @@ public class Camera {
 	public float getTy() {
 		return ty;
 	}
-	public boolean setTy(float ty, boolean collision) {
-		if (collision && ppmap.collides(this.tx, ty, this.tz)) return true;
+	public boolean setTy(float ty) {
+		if (physics && ppmap.collides(this.tx, ty, this.tz)) return true;
 		this.ty = ty;
 		return false;
 	}
