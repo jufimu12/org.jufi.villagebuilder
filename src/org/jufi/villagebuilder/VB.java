@@ -8,7 +8,7 @@ import org.jufi.lwjglutil.Camera.CameraMode;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
-import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.*;
 
 import static org.lwjgl.input.Keyboard.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -64,6 +64,8 @@ public class VB extends Engine {
 		glEnd();
 		
 		int[] mpos = get3dmousecoords();
+		System.out.println("X=" + mpos[0]);
+		System.out.println("Y=" + mpos[1]);
 		glDisable(GL_DEPTH_TEST);
 		glColor3f(1, 1, 1);
 		glBegin(GL_QUADS);
@@ -211,11 +213,11 @@ public class VB extends Engine {
 		return id;
 	}
 	
-	private int[] get3dmousecoords() {// TODO ANGLEY NOT WORKIG PROPERLY
+	private int[] get3dmousecoords() {// TODO NOT WORKIG PROPERLY -> CIRCLE -> NOTHING
 		int[] result = new int[2];
 		
-		double mrx = Math.toDegrees(Math.atan(-(Mouse.getX() * 2.0 / Display.getWidth() - 1) * PERSPECTIVE_ZNEAR_X_MAX));
-		double mry = Math.toDegrees(Math.atan((Mouse.getY() * 2.0 / Display.getHeight() - 1) * PERSPECTIVE_ZNEAR_Y_MAX));
+		float mrx = (float) Math.toDegrees(Math.atan((Mouse.getX() * 2.0 / Display.getWidth() - 1) * PERSPECTIVE_ZNEAR_X_MAX));
+		float mry = (float) Math.toDegrees(Math.atan((Mouse.getY() * 2.0 / Display.getHeight() - 1) * PERSPECTIVE_ZNEAR_Y_MAX));
 		
 		Matrix4f tf = new Matrix4f();
 		tf.m00 = 1;
@@ -223,7 +225,20 @@ public class VB extends Engine {
 		tf.m22 = 1;
 		tf.m33 = 1;
 		
+		Vector4f v0 = new Vector4f(0, 0, -1, 0);
 		
+		tf.translate(new Vector3f(cam.getTx(), cam.getTy(), cam.getTz()));
+		tf.rotate(cam.getRx(), new Vector3f(1, 0, 0));
+		tf.rotate(cam.getRy(), new Vector3f(0, 1, 0));
+		tf.rotate(mrx, new Vector3f(1, 0, 0));
+		tf.rotate(mry, new Vector3f(0, 1, 0));
+		
+		float k = cam.getTy() / (cam.getTy() - v0.getY());
+		
+		result[0] = (int) Math.floor(k * (cam.getTx() - v0.getX()));
+		result[1] = (int) Math.floor(k * (cam.getTz() - v0.getZ()));
+		
+		v0 = Matrix4f.transform(tf, v0, null);
 		
 		return result;
 	}
