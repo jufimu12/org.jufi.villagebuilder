@@ -183,7 +183,20 @@ public class Camera {
 		icon[1] = ResourceLoader.loadTextureIntoByteBuffer(System.getProperty("user.dir") + "/res/img/icon32.png");
 		Display.setIcon(icon);
 		
-		Display.create(new PixelFormat(8, 24, 0, 16));
+		try {
+			Display.create(new PixelFormat(8, 24, 0, 16));
+		} catch (LWJGLException e) {
+			System.err.println("Failed to init display:");
+			System.err.println(e.getMessage());
+			System.err.println("Trying other mode...");
+			try {
+				Display.create(new PixelFormat(8, 8, 0, 8));
+			} catch (LWJGLException e1) {
+				System.err.println(e.getMessage());
+				System.err.println("Loading default mode...");
+				Display.create();
+			}
+		}
 	}
 	
 	public void cleanup() {
