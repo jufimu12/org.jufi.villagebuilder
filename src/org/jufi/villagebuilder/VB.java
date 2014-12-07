@@ -32,7 +32,7 @@ public class VB extends Engine {
 	private boolean rmdown, lmup, shiftdown;
 	private boolean rendermark;
 	private ArrayList<Building> buildings = new ArrayList<Building>();
-	private int selectedbuilding = 1;
+	private int sb = 1;
 	private int mousex, mousez;
 	private DiscMenu bmenu;// TODO complete
 	
@@ -71,19 +71,19 @@ public class VB extends Engine {
 		glEnd();
 		glLineWidth(1);
 		// Nothing here!
-		if (rendermark && selectionavailable(Building.sizeX[selectedbuilding], Building.sizeZ[selectedbuilding])) {
+		if (rendermark && selectionavailable(Building.sizeX[sb], Building.sizeZ[sb])) {
 			glColor3f(1, 1, 1);
 			glDisable(GL_CULL_FACE);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			glPushMatrix();
 				glTranslatef(mousex, 0, mousez);
-				glCallList(Building.dls[selectedbuilding]);
+				glCallList(Building.dls[sb]);
 			glPopMatrix();
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			glEnable(GL_CULL_FACE);
 		}
 		// Nothing here!
-		if (selectedbuilding != 0 && mousex > 0 && mousex < MAP_SIZE && mousez > 0 && mousez < MAP_SIZE) {
+		if (sb != 0 && mousex > 0 && mousex < MAP_SIZE && mousez > 0 && mousez < MAP_SIZE) {
 			rendermark = true;
 			if (selectionavailable(1, 1)) glColor3f(1, 1, 1);
 			else glColor3f(0.5f, 0.5f, 0.5f);
@@ -102,7 +102,7 @@ public class VB extends Engine {
 	
 	@Override
 	protected void render2d() {
-		if (!rendermark && selectedbuilding != 0) {
+		if (!rendermark && sb != 0) {
 			glLineWidth(3);
 			glColor3f(1, 0, 0);
 			glBegin(GL_LINES);
@@ -148,7 +148,7 @@ public class VB extends Engine {
 		if (camheight < 10) camheight = 10;
 		if (camheight > 100) camheight = 100;
 		cam.moveY(true, oldcamheight - camheight);
-		if (Mouse.isButtonDown(1)) selectedbuilding = 0;
+		if (Mouse.isButtonDown(1)) sb = 0;
 		if (isKeyDown(KEY_LSHIFT)) {
 			if (!shiftdown) {
 				bmenu.show();
@@ -171,8 +171,8 @@ public class VB extends Engine {
 		if (!shiftdown && Mouse.isButtonDown(0)) {
 			if (lmup) {
 				lmup = false;
-				if (selectionavailable(Building.sizeX[selectedbuilding], Building.sizeZ[selectedbuilding])) {
-					Building b = Building.build(selectedbuilding, mousex, mousez);
+				if (selectionavailable(Building.sizeX[sb], Building.sizeZ[sb])) {
+					Building b = Building.build(sb, mousex, mousez);
 					if (b != null) buildings.add(b);
 				}
 			}
@@ -395,6 +395,7 @@ public class VB extends Engine {
 		}
 	}
 	private boolean selectionavailable(int sizeX, int sizeZ) {
+		if (mousex < 0 || mousez < 0 || mousex + sizeX > MAP_SIZE || mousez + sizeZ > MAP_SIZE) return false;
 		for (Building b : buildings) {
 			for (int x = mousex; x <= mousex + sizeX; x++) {
 				for (int z = mousez; z <= mousez + sizeZ; z++) {
