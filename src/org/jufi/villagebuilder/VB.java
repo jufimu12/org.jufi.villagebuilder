@@ -13,16 +13,13 @@ import org.lwjgl.input.Mouse;
 import static org.lwjgl.input.Keyboard.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
+import static org.jufi.villagebuilder.DiscMenu.DiscMenuItem;
 
 public class VB extends Engine {
 	public static final int MAP_SIZE = 256;// STATIC
 	public static final int MAP_DIV = 4;
 	public static final int GRASS_RES = 512;
 	public static final float CAM_SPEED = 0.03f;
-	public static final int bcount = 1;
-	public static int[] bdls = new int[bcount + 1];// BuildingDisplayLists
-	public static final int[] bsizeX = {0, 4};
-	public static final int[] bsizeZ = {0, 3};
 	
 	public static void main(String[] main) {
 		new VB().start();
@@ -32,11 +29,12 @@ public class VB extends Engine {
 	private int dl_map;// VARS
 	private float camheight = 25;
 	private float rmoriginx, rmoriginy, rmmovedx, rmmovedy;
-	private boolean rmdown, lmup;
+	private boolean rmdown, lmup, shiftdown;
 	private boolean rendermark;
-	private ArrayList<Entity> buildings = new ArrayList<Entity>();
+	private ArrayList<Building> buildings = new ArrayList<Building>();
 	private int selectedbuilding = 1;
 	private int mousex, mousez;
+	private DiscMenu bmenu;// TODO complete
 	
 	
 	@Override// FUNCTIONS
@@ -50,11 +48,8 @@ public class VB extends Engine {
 	
 	@Override
 	protected void render3d() {
-		for (Entity e : buildings) {
-			glPushMatrix();
-				glTranslatef(e.getX(), e.getY(), e.getZ());
-				e.render();
-			glPopMatrix();
+		for (Building e : buildings) {
+			e.render();
 		}
 	}
 	
@@ -76,13 +71,13 @@ public class VB extends Engine {
 		glEnd();
 		glLineWidth(1);
 		// Nothing here!
-		if (rendermark && selectionavailable(bsizeX[selectedbuilding], bsizeZ[selectedbuilding])) {
+		if (rendermark && selectionavailable(Building.sizeX[selectedbuilding], Building.sizeZ[selectedbuilding])) {
 			glColor3f(1, 1, 1);
 			glDisable(GL_CULL_FACE);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			glPushMatrix();
 				glTranslatef(mousex, 0, mousez);
-				glCallList(bdls[selectedbuilding]);
+				glCallList(Building.dls[selectedbuilding]);
 			glPopMatrix();
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			glEnable(GL_CULL_FACE);
@@ -91,7 +86,7 @@ public class VB extends Engine {
 		if (selectedbuilding != 0 && mousex > 0 && mousex < MAP_SIZE && mousez > 0 && mousez < MAP_SIZE) {
 			rendermark = true;
 			if (selectionavailable(1, 1)) glColor3f(1, 1, 1);
-			else glColor3f(0.8f, 0.8f, 0.8f);
+			else glColor3f(0.5f, 0.5f, 0.5f);
 			glBegin(GL_QUADS);
 				glVertex3f(mousex, 0, mousez);
 				glVertex3f(mousex, 0, mousez + 1);
@@ -118,6 +113,7 @@ public class VB extends Engine {
 			glEnd();
 			glLineWidth(1);
 		}
+		bmenu.render();
 	}
 	
 	@Override
@@ -153,27 +149,40 @@ public class VB extends Engine {
 		if (camheight > 100) camheight = 100;
 		cam.moveY(true, oldcamheight - camheight);
 		if (Mouse.isButtonDown(1)) selectedbuilding = 0;
+		if (isKeyDown(KEY_LSHIFT)) {
+			if (!shiftdown) {
+				bmenu.show();
+				shiftdown = true;
+			}
+		} else {
+			if (shiftdown) {
+				bmenu.hide();
+				shiftdown = false;
+			}
+		}
 	}
 	
 	@Override
 	protected void tick() {
-		int[] mpos = pickground();
-		mousex = mpos[0];
-		mousez = mpos[1];
+		double k = cam.getTy() / (float) MathLookup.sin(cam.getRx());
+		mousex = (int) Math.floor(k * MathLookup.sin(cam.getRy()) * MathLookup.cos(cam.getRx()) + cam.getTx());
+		mousez = (int) Math.floor(k * MathLookup.cos(cam.getRy()) * MathLookup.cos(cam.getRx()) + cam.getTz());
 		
-		if (Mouse.isButtonDown(0)) {
+		if (!shiftdown && Mouse.isButtonDown(0)) {
 			if (lmup) {
 				lmup = false;
-				Entity b = build();
-				if (b != null) buildings.add(b);
+				if (selectionavailable(Building.sizeX[selectedbuilding], Building.sizeZ[selectedbuilding])) {
+					Building b = Building.build(selectedbuilding, mousex, mousez);
+					if (b != null) buildings.add(b);
+				}
 			}
 		} else lmup = true;
 		
-		Iterator<Entity> ib = buildings.iterator();
-		Entity b;
+		Iterator<Building> ib = buildings.iterator();
+		Building b;
 		while (ib.hasNext()) {
 			b = ib.next();
-			if (b.tick()) ib.remove();
+			if (b.run()) ib.remove();
 		}
 	}
 	
@@ -195,12 +204,108 @@ public class VB extends Engine {
 		}
 		
 		initdisplaylists();
+		DiscMenu.initDL(250, 350);
+		bmenu = new DiscMenu();
+		bmenu.addItem(new DiscMenuItem() {
+			@Override
+			public void run() {
+				System.out.println("0");
+			}
+			@Override
+			public void render() {
+				glColor3f(1, 1, 1);
+				glBegin(GL_QUADS);
+					glVertex2f(-32, -32);
+					glVertex2f(32, -32);
+					glVertex2f(32, 32);
+					glVertex2f(-32, 32);
+				glEnd();
+			}
+		});
+		bmenu.addItem(new DiscMenuItem() {
+			@Override
+			public void run() {
+				System.out.println("1");
+			}
+			@Override
+			public void render() {
+				glColor3f(1, 0, 0);
+				glBegin(GL_QUADS);
+					glVertex2f(-10, -10);
+					glVertex2f(10, -10);
+					glVertex2f(10, 10);
+					glVertex2f(-10, 10);
+				glEnd();
+			}
+		});
+		bmenu.addItem(new DiscMenuItem() {
+			@Override
+			public void run() {
+				System.out.println("2");
+			}
+			@Override
+			public void render() {
+				glColor3f(0, 1, 0);
+				glBegin(GL_QUADS);
+					glVertex2f(-10, -10);
+					glVertex2f(10, -10);
+					glVertex2f(10, 10);
+					glVertex2f(-10, 10);
+				glEnd();
+			}
+		});
+		bmenu.addItem(new DiscMenuItem() {
+			@Override
+			public void run() {
+				System.out.println("3");
+			}
+			@Override
+			public void render() {
+				glColor3f(0, 0, 1);
+				glBegin(GL_QUADS);
+					glVertex2f(-10, -10);
+					glVertex2f(10, -10);
+					glVertex2f(10, 10);
+					glVertex2f(-10, 10);
+				glEnd();
+			}
+		});
+		bmenu.addItem(new DiscMenuItem() {
+			@Override
+			public void run() {
+				System.out.println("4");
+			}
+			@Override
+			public void render() {
+				glColor3f(1, 0, 1);
+				glBegin(GL_QUADS);
+					glVertex2f(-10, -10);
+					glVertex2f(10, -10);
+					glVertex2f(10, 10);
+					glVertex2f(-10, 10);
+				glEnd();
+			}
+		});
+		bmenu.addItem(new DiscMenuItem() {
+			@Override
+			public void run() {
+				System.out.println("5");
+			}
+			@Override
+			public void render() {
+				glColor3f(1, 1, 0);
+				glBegin(GL_QUADS);
+					glVertex2f(-10, -10);
+					glVertex2f(10, -10);
+					glVertex2f(10, 10);
+					glVertex2f(-10, 10);
+				glEnd();
+			}
+		});
 		
 		glClearColor(0.53f, 0.81f, 0.92f, 1f);
 		
 		Mouse.getDWheel();
-		
-		buildings.add(new BLiving(100, 100));
 	}
 	
 	@Override
@@ -244,14 +349,6 @@ public class VB extends Engine {
 		return id;
 	}
 	
-	private int[] pickground() {
-		int[] result = new int[2];
-		double k = cam.getTy() / (float) MathLookup.sin(cam.getRx());
-		result[0] = (int) Math.floor(k * MathLookup.sin(cam.getRy()) * MathLookup.cos(cam.getRx()) + cam.getTx());
-		result[1] = (int) Math.floor(k * MathLookup.cos(cam.getRy()) * MathLookup.cos(cam.getRx()) + cam.getTz());
-		return result;
-	}
-	
 	private void turnaroundcenter(float dry) {
 		float k = cam.getTy() / (float) MathLookup.sin(cam.getRx());
 		float dx = (float) (k * MathLookup.sin(cam.getRy()) * MathLookup.cos(cam.getRx()));
@@ -291,27 +388,17 @@ public class VB extends Engine {
 			glEnd();
 		glEndList();
 		
-		bdls[0] = 0;
-		bdls[1] = glGenLists(1);
-		glNewList(bdls[1], GL_COMPILE);
-			try {
-				new Model("res/obj/BLiving.obj").render();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		glEndList();
-	}
-	private Entity build() {
-		int sb = selectedbuilding;
-		if (sb <= 0) return null;
-		if (sb == 1) return new BLiving(mousex, mousez);
-		return null;
+		try {
+			Building.initDLs();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	private boolean selectionavailable(int sizeX, int sizeZ) {
-		for (Entity b : buildings) {
+		for (Building b : buildings) {
 			for (int x = mousex; x <= mousex + sizeX; x++) {
 				for (int z = mousez; z <= mousez + sizeZ; z++) {
-					if (x > b.getX() && x < b.getX() + b.sizeX() && z > b.getZ() && z < b.getZ() + b.sizeZ()) return false;
+					if (x > b.getX() && x < b.getX() + Building.sizeX[b.getID()] && z > b.getZ() && z < b.getZ() + Building.sizeZ[b.getID()]) return false;
 				}
 			}
 		}
