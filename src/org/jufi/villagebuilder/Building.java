@@ -45,10 +45,7 @@ public abstract class Building implements Renderable {
 	
 	public static final void initDLs() throws IOException {
 		dls[0] = 0;
-		dls[1] = glGenLists(1);
-		glNewList(dls[1], GL_COMPILE);
-			new Model("res/obj/BLiving.obj").render();
-		glEndList();
+		dls[1] = Model.getDL("res/obj/BLiving.obj");
 	}
 	public static final Building build(int id, int x, int z) {
 		int sb = id;
