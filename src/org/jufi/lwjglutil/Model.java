@@ -1,4 +1,4 @@
-package org.jufi.lwjglutil;// BINARY I/O FEATURE PROBABLY WONT WORK
+package org.jufi.lwjglutil;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -13,25 +13,114 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
 public class Model implements Renderable {
-	private ArrayList<float[]> vertices = new ArrayList<float[]>();
-	private ArrayList<float[]> vtextures = new ArrayList<float[]>();
-	private ArrayList<float[]> normals = new ArrayList<float[]>();
-	private ArrayList<ModelCommand> commands = new ArrayList<ModelCommand>();
-	private ArrayList<Material> materials = new ArrayList<Material>();
+	private ModelCommand[] commands;
 
 	public Model(String path) throws IOException {
-		BufferedReader res = new BufferedReader(new FileReader(path));
-		String line;
+		ArrayList<ModelCommand> cmds = new ArrayList<ModelCommand>();
+		ArrayList<float[]> vertices = new ArrayList<float[]>();
+		ArrayList<float[]> vtextures = new ArrayList<float[]>();
+		ArrayList<float[]> normals = new ArrayList<float[]>();
+		ArrayList<Material> materials = new ArrayList<Material>();
 
-		float[] firstValue = { 0, 0, 0 };
-		float[] vfirstValue = { 0, 0 };
-		vertices.add(firstValue);
-		vtextures.add(vfirstValue);
-		normals.add(firstValue);
+		vertices.add(new float[] {0, 0, 0});
+		vtextures.add(new float[] {0, 0});
+		normals.add(new float[] {0, 0, 0});
+		
+		BufferedReader res = new BufferedReader(new FileReader(path));
+
+		String line;
 		while ((line = res.readLine()) != null) {
-			readln(line, path);
+			if (!line.isEmpty() && !line.startsWith("#")) {
+				String[] args = line.split(" ");
+	
+				if (args[0].equals("v") && args.length == 4) {
+					float[] value = {Float.valueOf(args[1]), Float.valueOf(args[2]),
+							Float.valueOf(args[3])};
+					vertices.add(value);
+				}
+				if (args[0].equals("vn") && args.length == 4) {
+					float[] value = {Float.valueOf(args[1]), Float.valueOf(args[2]),
+							Float.valueOf(args[3])};
+					normals.add(value);
+				}
+				if (args[0].equals("vt") && args.length == 3) {
+					float[] value = {Float.valueOf(args[1]), Float.valueOf(args[2])};
+					vtextures.add(value);
+				}
+				if (args[0].equals("f") && args.length == 4) {
+					float[] v = new float[9];
+					float[] vt = new float[6];
+					float[] vn = new float[9];
+					boolean[] tex = new boolean[3];
+					for (int i = 0; i < 3; i++) {
+						if (args[i + 1].contains("/")) {
+							if (args[i + 1].contains("//")) {
+								String[] splitted = args[i + 1].split("//");
+								v[i * 3] = vertices.get(Integer.valueOf(splitted[0]))[0];
+								v[i * 3 + 1] = vertices.get(Integer.valueOf(splitted[0]))[1];
+								v[i * 3 + 2] = vertices.get(Integer.valueOf(splitted[0]))[2];
+								vn[i * 3] = normals.get(Integer.valueOf(splitted[1]))[0];
+								vn[i * 3 + 1] = normals.get(Integer.valueOf(splitted[1]))[1];
+								vn[i * 3 + 2] = normals.get(Integer.valueOf(splitted[1]))[2];
+							} else {
+								tex[i] = true;
+								String[] splitted = args[i + 1].split("/");
+								v[i * 3] = vertices.get(Integer.valueOf(splitted[0]))[0];
+								v[i * 3 + 1] = vertices.get(Integer.valueOf(splitted[0]))[1];
+								v[i * 3 + 2] = vertices.get(Integer.valueOf(splitted[0]))[2];
+								vt[i * 2] = vtextures.get(Integer.valueOf(splitted[1]))[0];
+								vt[i * 2 + 1] = vtextures.get(Integer.valueOf(splitted[1]))[1];
+								if (splitted.length == 3) {
+									vn[i * 3] = normals.get(Integer.valueOf(splitted[2]))[0];
+									vn[i * 3 + 1] = normals.get(Integer.valueOf(splitted[2]))[1];
+									vn[i * 3 + 2] = normals.get(Integer.valueOf(splitted[2]))[2];
+								}
+							}
+						} else {
+							v[i * 3] = vertices.get(Integer.valueOf(args[i + 1]))[0];
+							v[i * 3 + 1] = vertices.get(Integer.valueOf(args[i + 1]))[1];
+							v[i * 3 + 2] = vertices.get(Integer.valueOf(args[i + 1]))[2];
+						}
+					}
+					cmds.add(new Face(v, vt, vn, tex));
+				}
+				if (args[0].equals("mtllib") && args.length == 2) {
+					String mpath = new File(path).toPath().getParent().toString() + "/" + args[1];
+					BufferedReader mtlfile = new BufferedReader(new FileReader(mpath));
+					String mline;
+					
+					while ((mline = mtlfile.readLine()) != null) {
+						if (!(mline.isEmpty() || mline.startsWith("#"))) {
+							String[] margs = mline.split(" ");
+							
+							if (margs[0].equals("newmtl") && margs.length == 2) materials.add(new Material(margs[1]));
+							else if (margs[0].equals("Ka") && margs.length == 4) materials.get(materials.size() - 1).ka = PBytes.toFloatBuffer(Float.valueOf(margs[1]), Float.valueOf(margs[2]), Float.valueOf(margs[3]), 1);
+							else if (margs[0].equals("Kd") && margs.length == 4) materials.get(materials.size() - 1).kd = PBytes.toFloatBuffer(Float.valueOf(margs[1]), Float.valueOf(margs[2]), Float.valueOf(margs[3]), 1);
+							else if (margs[0].equals("Ks") && margs.length == 4) materials.get(materials.size() - 1).ks = PBytes.toFloatBuffer(Float.valueOf(margs[1]), Float.valueOf(margs[2]), Float.valueOf(margs[3]), 1);
+							else if (margs[0].equals("Ns") && margs.length == 2) materials.get(materials.size() - 1).ns = Float.valueOf(margs[1]);
+							else if ((margs[0].equals("map_Ka") || margs[0].equals("map_Kd")) && margs.length == 2) {
+								int texture = ResourceLoader.loadTexture(new File(mpath).toPath().getParent().toString() + "/" + margs[1]);
+								materials.get(materials.size() - 1).texture = texture;
+							}
+						}
+					}
+					
+					mtlfile.close();
+				}
+				if (args[0].equals("usemtl") && args.length == 2) {
+					for (Material mat : materials) {
+						if (mat.name.equals(args[1]))
+							cmds.add(mat);
+					}
+				}
+			}
 		}
 		res.close();
+		
+		commands = new ModelCommand[cmds.size()];
+		for (int i = 0; i < cmds.size(); i++) {
+			commands[i] = cmds.get(i);
+		}
 	}
 
 	public void render() {
@@ -41,285 +130,8 @@ public class Model implements Renderable {
 		}
 		glEnd();
 	}
-
-	public void renderFace(Face face) {
-		if (face.normals[0] != 0)
-			glNormal3f(normals.get(face.normals[0])[0],
-					normals.get(face.normals[0])[1],
-					normals.get(face.normals[0])[2]);
-		if (face.textures[0] != 0)
-			glTexCoord2f(vtextures.get(face.textures[0])[0],
-					vtextures.get(face.textures[0])[1]);
-		glVertex3f(vertices.get(face.vertices[0])[0],
-				vertices.get(face.vertices[0])[1],
-				vertices.get(face.vertices[0])[2]);
-
-		if (face.normals[1] != 0)
-			glNormal3f(normals.get(face.normals[1])[0],
-					normals.get(face.normals[1])[1],
-					normals.get(face.normals[1])[2]);
-		if (face.textures[1] != 0)
-			glTexCoord2f(vtextures.get(face.textures[1])[0],
-					vtextures.get(face.textures[1])[1]);
-		glVertex3f(vertices.get(face.vertices[1])[0],
-				vertices.get(face.vertices[1])[1],
-				vertices.get(face.vertices[1])[2]);
-
-		if (face.normals[2] != 0)
-			glNormal3f(normals.get(face.normals[2])[0],
-					normals.get(face.normals[2])[1],
-					normals.get(face.normals[2])[2]);
-		if (face.textures[2] != 0)
-			glTexCoord2f(vtextures.get(face.textures[2])[0],
-					vtextures.get(face.textures[2])[1]);
-		glVertex3f(vertices.get(face.vertices[2])[0],
-				vertices.get(face.vertices[2])[1],
-				vertices.get(face.vertices[2])[2]);
-	}
-
-	public void renderFace(Face face, ArrayList<Byte> b) {
-		if (face.normals[0] != 0) {
-			b.add(b(0x12));
-			addBytea(b, PBytes.byDouble(normals.get(face.normals[0])[0]));
-			addBytea(b, PBytes.byDouble(normals.get(face.normals[0])[1]));
-			addBytea(b, PBytes.byDouble(normals.get(face.normals[0])[2]));
-		}
-		if (face.textures[0] != 0) {
-			b.add(b(0x11));
-			addBytea(b, PBytes.byDouble(vtextures.get(face.textures[0])[0]));
-			addBytea(b, PBytes.byDouble(vtextures.get(face.textures[0])[1]));
-		}
-		b.add(b(0x10));
-		addBytea(b, PBytes.byDouble(vertices.get(face.vertices[0])[0]));
-		addBytea(b, PBytes.byDouble(vertices.get(face.vertices[0])[1]));
-		addBytea(b, PBytes.byDouble(vertices.get(face.vertices[0])[2]));
-
-		if (face.normals[1] != 0) {
-			b.add(b(0x12));
-			addBytea(b, PBytes.byDouble(normals.get(face.normals[1])[0]));
-			addBytea(b, PBytes.byDouble(normals.get(face.normals[1])[1]));
-			addBytea(b, PBytes.byDouble(normals.get(face.normals[1])[2]));
-		}
-		if (face.textures[1] != 0) {
-			b.add(b(0x11));
-			addBytea(b, PBytes.byDouble(vtextures.get(face.textures[1])[0]));
-			addBytea(b, PBytes.byDouble(vtextures.get(face.textures[1])[1]));
-		}
-		b.add(b(0x10));
-		addBytea(b, PBytes.byDouble(vertices.get(face.vertices[1])[0]));
-		addBytea(b, PBytes.byDouble(vertices.get(face.vertices[1])[1]));
-		addBytea(b, PBytes.byDouble(vertices.get(face.vertices[1])[2]));
-
-		if (face.normals[2] != 0) {
-			b.add(b(0x12));
-			addBytea(b, PBytes.byDouble(normals.get(face.normals[2])[0]));
-			addBytea(b, PBytes.byDouble(normals.get(face.normals[2])[1]));
-			addBytea(b, PBytes.byDouble(normals.get(face.normals[2])[2]));
-		}
-		if (face.textures[2] != 0) {
-			b.add(b(0x11));
-			addBytea(b, PBytes.byDouble(vtextures.get(face.textures[2])[0]));
-			addBytea(b, PBytes.byDouble(vtextures.get(face.textures[2])[1]));
-		}
-		b.add(b(0x10));
-		addBytea(b, PBytes.byDouble(vertices.get(face.vertices[2])[0]));
-		addBytea(b, PBytes.byDouble(vertices.get(face.vertices[2])[1]));
-		addBytea(b, PBytes.byDouble(vertices.get(face.vertices[2])[2]));
-	}
-
-	public byte[] toBinary() {
-		ArrayList<Byte> b = new ArrayList<Byte>();
-		b.add(b(0x00));
-		for (ModelCommand command : commands) {
-			System.out.println("Converting: " + command.toString());
-			command.execute(this, b);
-		}
-		b.add(b(0x01));
-		byte[] value = new byte[b.size()];
-		for (int i = 0; i < b.size(); i++)
-			value[i] = b.get(i).byteValue();
-		return value;
-	}
-
-	public void writeBinary(String path) throws IOException {
-		PBytes.toFile(toBinary(), path);
-	}
-
-	private void readln(String line, String objpath) throws IOException {
-		if (line.isEmpty() || line.startsWith("#")) {
-			return;
-		}
-
-		String[] args = line.split(" ");
-
-		if (args[0].equals("v") && args.length == 4) {
-			float[] value = { Float.valueOf(args[1]), Float.valueOf(args[2]),
-					Float.valueOf(args[3]) };
-			vertices.add(value);
-		}
-		if (args[0].equals("vn") && args.length == 4) {
-			float[] value = { Float.valueOf(args[1]), Float.valueOf(args[2]),
-					Float.valueOf(args[3]) };
-			normals.add(value);
-		}
-		if (args[0].equals("vt") && args.length == 3) {
-			float[] value = { Float.valueOf(args[1]), Float.valueOf(args[2]) };
-			vtextures.add(value);
-		}
-		if (args[0].equals("f") && args.length == 4) {
-			int[] v = new int[args.length - 1];
-			int[] vt = new int[args.length - 1];
-			int[] vn = new int[args.length - 1];
-			for (int i = 0; i < vt.length; i++)
-				vt[i] = 0;
-			for (int i = 1; i <= 3; i++) {
-				if (args[i].contains("/")) {
-					if (args[i].contains("//")) {
-						String[] splitted = args[i].split("//");
-						v[i - 1] = Integer.valueOf(splitted[0]);
-						vn[i - 1] = Integer.valueOf(splitted[1]);
-					} else {
-						String[] splitted = args[i].split("/");
-						v[i - 1] = Integer.valueOf(splitted[0]);
-						if (splitted.length >= 2) {
-							vt[i - 1] = Integer.valueOf(splitted[1]);
-						}
-						if (splitted.length == 3) {
-							vn[i - 1] = Integer.valueOf(splitted[2]);
-						}
-					}
-				} else {
-					v[i - 1] = Integer.valueOf(args[i]);
-				}
-			}
-			commands.add(new Face(v, vt, vn));
-		}
-		if (args[0].equals("mtllib") && args.length == 2) {
-			Material.readFile(materials, new File(objpath).toPath().getParent()
-					.toString()
-					+ "/" + args[1]);
-
-		}
-		if (args[0].equals("usemtl") && args.length == 2) {
-			for (Material mat : materials) {
-				if (mat.name.equals(args[1]))
-					commands.add(mat);
-			}
-		}
-	}
-
-	private static Byte b(int b) {
-		return Byte.valueOf((byte) b);
-	}
-
-	private static void addBytea(ArrayList<Byte> b, byte[] v) {
-		for (byte e : v) {
-			b.add(Byte.valueOf(e));
-		}
-	}
-
-	public static void renderBinary(byte[] b) {
-		int i = 0;
-		while (i < b.length) {
-			switch (b[i]) {
-			case 0x00:
-				glBegin(GL_TRIANGLES);
-				i++;
-				break;
-			case 0x01:
-				glEnd();
-				i++;
-				break;
-			case 0x10:
-				glVertex3d(PBytes.toDouble(b[i + 1], b[i + 2], b[i + 3],
-						b[i + 4], b[i + 5], b[i + 6], b[i + 7], b[i + 8]),
-						PBytes.toDouble(b[i + 9], b[i + 10], b[i + 11],
-								b[i + 12], b[i + 13], b[i + 14], b[i + 15],
-								b[i + 16]), PBytes.toDouble(b[i + 17],
-								b[i + 18], b[i + 19], b[i + 20], b[i + 21],
-								b[i + 22], b[i + 23], b[i + 24]));
-				i += 25;
-				break;
-			case 0x11:
-				glTexCoord2d(PBytes.toDouble(b[i + 1], b[i + 2], b[i + 3],
-						b[i + 4], b[i + 5], b[i + 6], b[i + 7], b[i + 8]),
-						PBytes.toDouble(b[i + 9], b[i + 10], b[i + 11],
-								b[i + 12], b[i + 13], b[i + 14], b[i + 15],
-								b[i + 16]));
-				i += 17;
-				break;
-			case 0x12:
-				glNormal3d(PBytes.toDouble(b[i + 1], b[i + 2], b[i + 3],
-						b[i + 4], b[i + 5], b[i + 6], b[i + 7], b[i + 8]),
-						PBytes.toDouble(b[i + 9], b[i + 10], b[i + 11],
-								b[i + 12], b[i + 13], b[i + 14], b[i + 15],
-								b[i + 16]), PBytes.toDouble(b[i + 17],
-								b[i + 18], b[i + 19], b[i + 20], b[i + 21],
-								b[i + 22], b[i + 23], b[i + 24]));
-				i += 25;
-				break;
-			case 0x20:
-				FloatBuffer ambient = BufferUtils.createFloatBuffer(4);
-				ambient.put(PBytes.toFloat(b[i + 1], b[i + 2], b[i + 3],
-						b[i + 4]));
-				ambient.put(PBytes.toFloat(b[i + 5], b[i + 6], b[i + 7],
-						b[i + 8]));
-				ambient.put(PBytes.toFloat(b[i + 9], b[i + 10], b[i + 11],
-						b[i + 12]));
-				ambient.put(PBytes.toFloat(b[i + 13], b[i + 14], b[i + 15],
-						b[i + 16]));
-				ambient.flip();
-				glMaterial(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
-				i += 17;
-				break;
-			case 0x21:
-				FloatBuffer diffuse = BufferUtils.createFloatBuffer(4);
-				diffuse.put(PBytes.toFloat(b[i + 1], b[i + 2], b[i + 3],
-						b[i + 4]));
-				diffuse.put(PBytes.toFloat(b[i + 5], b[i + 6], b[i + 7],
-						b[i + 8]));
-				diffuse.put(PBytes.toFloat(b[i + 9], b[i + 10], b[i + 11],
-						b[i + 12]));
-				diffuse.put(PBytes.toFloat(b[i + 13], b[i + 14], b[i + 15],
-						b[i + 16]));
-				diffuse.flip();
-				glMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
-				i += 17;
-				break;
-			case 0x22:
-				FloatBuffer specular = BufferUtils.createFloatBuffer(4);
-				specular.put(PBytes.toFloat(b[i + 1], b[i + 2], b[i + 3],
-						b[i + 4]));
-				specular.put(PBytes.toFloat(b[i + 5], b[i + 6], b[i + 7],
-						b[i + 8]));
-				specular.put(PBytes.toFloat(b[i + 9], b[i + 10], b[i + 11],
-						b[i + 12]));
-				specular.put(PBytes.toFloat(b[i + 13], b[i + 14], b[i + 15],
-						b[i + 16]));
-				specular.flip();
-				glMaterial(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
-				i += 17;
-				break;
-			case 0x23:
-				glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS,
-						PBytes.toFloat(b[i + 1], b[i + 2], b[i + 3], b[i + 4]));
-			}
-		}
-	}
-
-	public static void renderBinary(String path) throws IOException {
-		renderBinary(PBytes.byFile(path));
-	}
-
-	public static int getCallListFromBinary(String path) throws IOException {
-		int calllist = glGenLists(1);
-		glNewList(calllist, GL_COMPILE);
-		renderBinary(path);
-		glEndList();
-		return calllist;
-	}
-
-	public static int getCallListFromOBJ(String path) throws IOException {
+	
+	public static int getDL(String path) throws IOException {
 		int callist = glGenLists(1);
 		glNewList(callist, GL_COMPILE);
 		new Model(path).render();
@@ -328,24 +140,54 @@ public class Model implements Renderable {
 	}
 
 	private static class Face implements ModelCommand {
-		public final int[] vertices;
-		public final int[] textures;
-		public final int[] normals;
+		private final float v0, v1, v2, v3, v4, v5, v6, v7, v8;
+		private final float t0, t1, t2, t3, t4, t5;
+		private final float n0, n1, n2, n3, n4, n5, n6, n7, n8;
+		private final boolean texen0, texen1, texen2;
 
-		public Face(int[] vertices, int[] textures, int[] normals) {
-			this.vertices = vertices;
-			this.textures = textures;
-			this.normals = normals;
+		public Face(float[] v, float[] t, float[] n, boolean[] texen) {
+			v0 = v[0];
+			v1 = v[1];
+			v2 = v[2];
+			v3 = v[3];
+			v4 = v[4];
+			v5 = v[5];
+			v6 = v[6];
+			v7 = v[7];
+			v8 = v[8];
+			t0 = t[0];
+			t1 = t[1];
+			t2 = t[2];
+			t3 = t[3];
+			t4 = t[4];
+			t5 = t[5];
+			n0 = n[0];
+			n1 = n[1];
+			n2 = n[2];
+			n3 = n[3];
+			n4 = n[4];
+			n5 = n[5];
+			n6 = n[6];
+			n7 = n[7];
+			n8 = n[8];
+			texen0 = texen[0];
+			texen1 = texen[1];
+			texen2 = texen[2];
 		}
 
 		@Override
 		public void execute(Model commander) {
-			commander.renderFace(this);
-		}
-
-		@Override
-		public void execute(Model commander, ArrayList<Byte> b) {
-			commander.renderFace(this, b);
+			glNormal3f(n0, n1, n2);
+			if (texen0) glTexCoord2f(t0, t1);
+			glVertex3f(v0, v1, v2);
+			
+			glNormal3f(n3, n4, n5);
+			if (texen1) glTexCoord2f(t2, t3);
+			glVertex3f(v3, v4, v5);
+			
+			glNormal3f(n6, n7, n8);
+			if (texen2) glTexCoord2f(t4, t5);
+			glVertex3f(v6, v7, v8);
 		}
 	}
 
@@ -374,65 +216,9 @@ public class Model implements Renderable {
 			glBindTexture(GL_TEXTURE_2D, texture);
 			glBegin(GL_TRIANGLES);
 		}
-
-		@Override
-		public void execute(Model commander, ArrayList<Byte> b) {
-			b.add(b(0x01));
-			b.add(b(0x20));
-			addBytea(b, PBytes.byFloat(ka.get(0)));
-			addBytea(b, PBytes.byFloat(ka.get(1)));
-			addBytea(b, PBytes.byFloat(ka.get(2)));
-			addBytea(b, PBytes.byFloat(ka.get(3)));
-			b.add(b(0x21));
-			addBytea(b, PBytes.byFloat(kd.get(0)));
-			addBytea(b, PBytes.byFloat(kd.get(1)));
-			addBytea(b, PBytes.byFloat(kd.get(2)));
-			addBytea(b, PBytes.byFloat(kd.get(3)));
-			b.add(b(0x22));
-			addBytea(b, PBytes.byFloat(ks.get(0)));
-			addBytea(b, PBytes.byFloat(ks.get(1)));
-			addBytea(b, PBytes.byFloat(ks.get(2)));
-			addBytea(b, PBytes.byFloat(ks.get(3)));
-			b.add(b(0x00));
-		}
-
-		private static Byte b(int b) {
-			return Byte.valueOf((byte) b);
-		}
-
-		private static void addBytea(ArrayList<Byte> b, byte[] v) {
-			for (byte e : v) {
-				b.add(Byte.valueOf(e));
-			}
-		}
-
-		public static void readFile(ArrayList<Material> materials, String path) throws IOException {
-			BufferedReader mtlfile = new BufferedReader(new FileReader(path));
-			String line;
-			
-			while ((line = mtlfile.readLine()) != null) {
-				if (!(line.isEmpty() || line.startsWith("#"))) {
-					String[] args = line.split(" ");
-					
-					if (args[0].equals("newmtl") && args.length == 2) materials.add(new Material(args[1]));
-					else if (args[0].equals("Ka") && args.length == 4) materials.get(materials.size() - 1).ka = PBytes.toFloatBuffer(Float.valueOf(args[1]), Float.valueOf(args[2]), Float.valueOf(args[3]), 1);
-					else if (args[0].equals("Kd") && args.length == 4) materials.get(materials.size() - 1).kd = PBytes.toFloatBuffer(Float.valueOf(args[1]), Float.valueOf(args[2]), Float.valueOf(args[3]), 1);
-					else if (args[0].equals("Ks") && args.length == 4) materials.get(materials.size() - 1).ks = PBytes.toFloatBuffer(Float.valueOf(args[1]), Float.valueOf(args[2]), Float.valueOf(args[3]), 1);
-					else if (args[0].equals("Ns") && args.length == 2) materials.get(materials.size() - 1).ns = Float.valueOf(args[1]);
-					else if ((args[0].equals("map_Ka") || args[0].equals("map_Kd")) && args.length == 2) {
-						int texture = ResourceLoader.loadTexture(new File(path).toPath().getParent().toString() + "/" + args[1]);
-						materials.get(materials.size() - 1).texture = texture;
-					}
-				}
-			}
-			
-			mtlfile.close();
-		}
 	}
 
 	private static interface ModelCommand {
 		public void execute(Model commander);
-
-		public void execute(Model commander, ArrayList<Byte> b);
 	}
 }
