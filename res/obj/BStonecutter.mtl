@@ -1,8 +1,8 @@
-newmtl logs
+newmtl bricks
 Ns 96.078431
-Ka 1.00 0.65 0.31
-Kd 1.00 0.65 0.31
-Ks 1.00 1.00 1.00
+Ka 0.93 0.42 0.31
+Kd 0.93 0.42 0.31
+Ks 1 1 1
 
 newmtl roof
 Ns 96.078431

@@ -17,10 +17,10 @@ int[] sizeX, sizeY, sizeZ, BUILD_TIME, dls
 
 public abstract class Building implements Renderable {
 	public static int[] dls = new int[5];// TODO on new building
-	public static final int[] sizeX = {0, 4, 4, 4};// TODO on new building
-	public static final int[] sizeY = {0, 3, 3, 3};// TODO on new building
-	public static final int[] sizeZ = {0, 3, 4, 5};// TODO on new building
-	private static final int[] BUILD_TIME = {1, 250, 250, 500};// TODO on new building
+	public static final int[] sizeX = {0, 4, 4, 4, 4};// TODO on new building
+	public static final int[] sizeY = {0, 3, 3, 3, 6};// TODO on new building
+	public static final int[] sizeZ = {0, 3, 4, 5, 6};// TODO on new building
+	private static final int[] BUILD_TIME = {1, 500, 500, 500, 500};// TODO on new building
 	protected int btimeleft = BUILD_TIME[getID()];
 	protected boolean bfinished = false;
 	protected int x, z;
@@ -61,6 +61,7 @@ public abstract class Building implements Renderable {
 		dls[1] = Model.getDL("res/obj/BLiving.obj");
 		dls[2] = Model.getDL("res/obj/BForester.obj");
 		dls[3] = Model.getDL("res/obj/BQuarry.obj");
+		dls[4] = Model.getDL("res/obj/BStonecutter.obj");
 	}
 	public static final Building build(int id, int x, int z) {// TODO on new building
 		int sb = id;
