@@ -21,24 +21,32 @@ public class VB extends Engine {
 	public static final int GRASS_RES = 512;
 	public static final float CAM_SPEED = 0.03f;
 	
+	public static VB vb;
+	
 	public static void main(String[] main) {
-		new VB().start();
+		vb = new VB();
+		vb.start();
 	}
 	
 	
-	private int dl_map;// VARS
+	private int dl_map, dl_hud;// VARS
 	private float camheight = 25;
 	private float rmoriginx, rmoriginy, rmmovedx, rmmovedy;
 	private boolean rmdown, lmup, shiftdown;
 	private boolean rendermark;
 	private ArrayList<Building> buildings = new ArrayList<Building>();
-	private int sb = 1;
+	private int sb;
 	private int mousex, mousez;
-	private DiscMenu bmenu;// TODO complete
+	public int[] goods = new int[3];
+	private int[] tex_goods = new int[3];
+	private int tex_bmenu_mat;
+	private int goodlimit = 100;
+	private DiscMenu bmenu, bmenu_mat;
 	
 	
 	@Override// FUNCTIONS
 	protected void render3dRelative() {
+		
 	}
 	
 	@Override
@@ -83,7 +91,7 @@ public class VB extends Engine {
 			glEnable(GL_CULL_FACE);
 		}
 		// Nothing here!
-		if (sb != 0 && mousex > 0 && mousex < MAP_SIZE && mousez > 0 && mousez < MAP_SIZE) {
+		if (sb != 0 && mousex >= 0 && mousex < MAP_SIZE && mousez >= 0 && mousez < MAP_SIZE) {
 			rendermark = true;
 			if (selectionavailable(1, 1)) glColor3f(1, 1, 1);
 			else glColor3f(0.5f, 0.5f, 0.5f);
@@ -102,6 +110,7 @@ public class VB extends Engine {
 	
 	@Override
 	protected void render2d() {
+		glBindTexture(GL_TEXTURE_2D, ResourceLoader.white);
 		if (!rendermark && sb != 0) {
 			glLineWidth(3);
 			glColor3f(1, 0, 0);
@@ -113,7 +122,10 @@ public class VB extends Engine {
 			glEnd();
 			glLineWidth(1);
 		}
+		glCallList(dl_hud);
+		
 		bmenu.render();
+		bmenu_mat.render();
 	}
 	
 	@Override
@@ -151,12 +163,13 @@ public class VB extends Engine {
 		if (Mouse.isButtonDown(1)) sb = 0;
 		if (isKeyDown(KEY_LSHIFT)) {
 			if (!shiftdown) {
-				bmenu.show();
+				bmenu.active = true;
 				shiftdown = true;
 			}
 		} else {
 			if (shiftdown) {
-				bmenu.hide();
+				bmenu.active = false;
+				bmenu_mat.active = false;
 				shiftdown = false;
 			}
 		}
@@ -184,6 +197,9 @@ public class VB extends Engine {
 			b = ib.next();
 			if (b.run()) ib.remove();
 		}
+		for (int i = 0; i < goods.length; i++) {
+			if (goods[i] > goodlimit) goods[i] = goodlimit;
+		}
 	}
 	
 	@Override
@@ -193,7 +209,7 @@ public class VB extends Engine {
 	
 	@Override
 	protected void postInit() {
-		try {
+		try {// shader
 			sh_main = new int[3];
 			sh_main[0] = ResourceLoader.loadShader("res/shader/3d.vsh", "res/shader/3d.fsh")[0];
 			sh_main[1] = ResourceLoader.loadShader("res/shader/2d.vsh", "res/shader/2d.fsh")[0];
@@ -203,105 +219,19 @@ public class VB extends Engine {
 			System.err.println("Failed to init shaders");
 		}
 		
+		try {
+			tex_goods[0] = ResourceLoader.loadTexture("res/img/glogs.png");
+			tex_goods[1] = ResourceLoader.loadTexture("res/img/gstone.png");
+			tex_goods[2] = ResourceLoader.loadTexture("res/img/gbrick.png");
+			
+			tex_bmenu_mat = ResourceLoader.loadTexture("res/img/bmmat.png");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 		initdisplaylists();
-		DiscMenu.initDL(250, 350);
-		bmenu = new DiscMenu();
-		bmenu.addItem(new DiscMenuItem() {
-			@Override
-			public void run() {
-				System.out.println("0");
-			}
-			@Override
-			public void render() {
-				glColor3f(1, 1, 1);
-				glBegin(GL_QUADS);
-					glVertex2f(-32, -32);
-					glVertex2f(32, -32);
-					glVertex2f(32, 32);
-					glVertex2f(-32, 32);
-				glEnd();
-			}
-		});
-		bmenu.addItem(new DiscMenuItem() {
-			@Override
-			public void run() {
-				System.out.println("1");
-			}
-			@Override
-			public void render() {
-				glColor3f(1, 0, 0);
-				glBegin(GL_QUADS);
-					glVertex2f(-10, -10);
-					glVertex2f(10, -10);
-					glVertex2f(10, 10);
-					glVertex2f(-10, 10);
-				glEnd();
-			}
-		});
-		bmenu.addItem(new DiscMenuItem() {
-			@Override
-			public void run() {
-				System.out.println("2");
-			}
-			@Override
-			public void render() {
-				glColor3f(0, 1, 0);
-				glBegin(GL_QUADS);
-					glVertex2f(-10, -10);
-					glVertex2f(10, -10);
-					glVertex2f(10, 10);
-					glVertex2f(-10, 10);
-				glEnd();
-			}
-		});
-		bmenu.addItem(new DiscMenuItem() {
-			@Override
-			public void run() {
-				System.out.println("3");
-			}
-			@Override
-			public void render() {
-				glColor3f(0, 0, 1);
-				glBegin(GL_QUADS);
-					glVertex2f(-10, -10);
-					glVertex2f(10, -10);
-					glVertex2f(10, 10);
-					glVertex2f(-10, 10);
-				glEnd();
-			}
-		});
-		bmenu.addItem(new DiscMenuItem() {
-			@Override
-			public void run() {
-				System.out.println("4");
-			}
-			@Override
-			public void render() {
-				glColor3f(1, 0, 1);
-				glBegin(GL_QUADS);
-					glVertex2f(-10, -10);
-					glVertex2f(10, -10);
-					glVertex2f(10, 10);
-					glVertex2f(-10, 10);
-				glEnd();
-			}
-		});
-		bmenu.addItem(new DiscMenuItem() {
-			@Override
-			public void run() {
-				System.out.println("5");
-			}
-			@Override
-			public void render() {
-				glColor3f(1, 1, 0);
-				glBegin(GL_QUADS);
-					glVertex2f(-10, -10);
-					glVertex2f(10, -10);
-					glVertex2f(10, 10);
-					glVertex2f(-10, 10);
-				glEnd();
-			}
-		});
+		
+		initDiscMenus();
 		
 		glClearColor(0.53f, 0.81f, 0.92f, 1f);
 		
@@ -359,7 +289,7 @@ public class VB extends Engine {
 		cam.moveY(true, -length);
 	}
 	private void initdisplaylists() {
-		int tex_grass = generateRandomGrassTexture();// DisplayLists
+		int tex_grass = generateRandomGrassTexture();// grass
 		dl_map = glGenLists(1);
 		glNewList(dl_map, GL_COMPILE);
 			glBindTexture(GL_TEXTURE_2D, tex_grass);
@@ -388,11 +318,36 @@ public class VB extends Engine {
 			glEnd();
 		glEndList();
 		
-		try {
+		dl_hud = glGenLists(1);// hud
+		glNewList(dl_hud, GL_COMPILE);
+			glBindTexture(GL_TEXTURE_2D, ResourceLoader.white);
+			glColor3f(DiscMenu.COLOR, DiscMenu.COLOR, DiscMenu.COLOR);
+			glBegin(GL_QUADS);
+				glVertex2f(1295, 863);
+				glVertex2f(1595, 863);
+				glVertex2f(1595, 895);
+				glVertex2f(1295, 895);
+			glEnd();
+			glColor3f(1, 1, 1);
+			float movex = 1295;
+			for (int i = 0; i < tex_goods.length; i++) {
+				glBindTexture(GL_TEXTURE_2D, tex_goods[i]);
+				glBegin(GL_QUADS);
+					glTexCoord2f(0, 1); glVertex2f(movex + 8, 871);
+					glTexCoord2f(1, 1); glVertex2f(movex + 24, 871);
+					glTexCoord2f(1, 0); glVertex2f(movex + 24, 887);
+					glTexCoord2f(0, 0); glVertex2f(movex + 8, 887);
+				glEnd();
+				movex += 50;
+			}
+		glEndList();
+
+		try {// misc
 			Building.initDLs();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		DiscMenu.initDL(250, 350);
 	}
 	private boolean selectionavailable(int sizeX, int sizeZ) {
 		if (mousex < 0 || mousez < 0 || mousex + sizeX > MAP_SIZE || mousez + sizeZ > MAP_SIZE) return false;
@@ -404,5 +359,60 @@ public class VB extends Engine {
 			}
 		}
 		return true;
+	}
+	private void initDiscMenus() {
+		bmenu_mat = new DiscMenu();
+		bmenu_mat.addItem(new DiscMenuItem() {
+			@Override
+			public void render() {
+				renderDiscMenuIconWithTexture(tex_goods[0]);
+			}
+			@Override
+			public void run() {
+				sb = 2;
+			}
+		});
+		bmenu_mat.addItem(new DiscMenuItem() {
+			@Override
+			public void render() {
+				renderDiscMenuIconWithTexture(tex_goods[1]);
+			}
+			@Override
+			public void run() {
+				sb = 3;
+			}
+		});
+		bmenu_mat.addItem(new DiscMenuItem() {
+			@Override
+			public void render() {
+				renderDiscMenuIconWithTexture(tex_goods[2]);
+			}
+			@Override
+			public void run() {
+				sb = 4;
+			}
+		});
+		
+		bmenu = new DiscMenu();
+		bmenu.addItem(new DiscMenuItem() {
+			@Override
+			public void render() {
+				renderDiscMenuIconWithTexture(tex_bmenu_mat);
+			}
+			@Override
+			public void run() {
+				bmenu_mat.active = true;
+			}
+		});
+	}
+	private void renderDiscMenuIconWithTexture(int tex) {
+		glColor3f(1, 1, 1);
+		glBindTexture(GL_TEXTURE_2D, tex);
+		glBegin(GL_QUADS);
+			glTexCoord2f(0, 1); glVertex2f(-32, -32);
+			glTexCoord2f(1, 1); glVertex2f(32, -32);
+			glTexCoord2f(1, 0); glVertex2f(32, 32);
+			glTexCoord2f(0, 0); glVertex2f(-32, 32);
+		glEnd();
 	}
 }

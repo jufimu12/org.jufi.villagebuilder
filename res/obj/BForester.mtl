@@ -1,3 +1,9 @@
+newmtl logs
+Ns 96
+Ka 1.00 0.65 0.31
+Kd 1.00 0.65 0.31
+Ks 1.00 1.00 1.00
+
 newmtl roof
 Ns 96
 Ka 0.70 0.13 0.13

@@ -3,8 +3,7 @@ package org.jufi.villagebuilder;
 public class BLiving extends Building {
 	
 	public BLiving(int x, int z) {
-		this.x = x;
-		this.z = z;
+		super(x, z);
 	}
 	
 	@Override
