@@ -37,11 +37,12 @@ public class VB extends Engine {
 	private ArrayList<Building> buildings = new ArrayList<Building>();
 	private int sb;
 	private int mousex, mousez;
-	public int[] goods = new int[3];
-	private int[] tex_goods = new int[3];
-	private int tex_bmenu_mat;
-	private int goodlimit = 100;
-	private DiscMenu bmenu, bmenu_mat;
+	public float[] goods = new float[5];
+	private int[] tex_goods = new int[5];
+	private int tex_bmenu_mat, tex_bmenu_liv, tex_bmenu_liv_0, tex_person;
+	private int goodlimit = 1000;
+	private DiscMenu bmenu, bmenu_mat, bmenu_liv;
+	public float workersp, workersm, workersq;
 	
 	
 	@Override// FUNCTIONS
@@ -80,7 +81,8 @@ public class VB extends Engine {
 		glLineWidth(1);
 		// Nothing here!
 		if (rendermark && selectionavailable(Building.sizeX[sb], Building.sizeZ[sb])) {
-			glColor3f(1, 1, 1);
+			if (Building.canAfford(sb)) glColor3f(1, 1, 1);
+			else glColor3f(1, 0, 0);
 			glDisable(GL_CULL_FACE);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			glPushMatrix();
@@ -123,9 +125,22 @@ public class VB extends Engine {
 			glLineWidth(1);
 		}
 		glCallList(dl_hud);
+		glBindTexture(GL_TEXTURE_2D, ResourceLoader.white);
+		int movex = 137;
+		for (int i = 0; i < tex_goods.length; i++) {
+			Draw.drawString((int) goods[i], movex, 875, 1, 1, 1);
+			if (i < 5 && sb > 0) {
+				if (Building.cost[sb][i] <= goods[i]) Draw.drawString(Building.cost[sb][i], movex, 835, 0, 1, 0);
+				else Draw.drawString(Building.cost[sb][i], movex, 835, 1, 0, 0);
+				
+			}
+			movex += 64;
+		}
+		Draw.drawString((int) workersp + " / " + (int) workersm + " / " + Math.floor(workersq * 100f) / 100f, 457, 835, 1, 1, 1);
 		
 		bmenu.render();
 		bmenu_mat.render();
+		bmenu_liv.render();
 	}
 	
 	@Override
@@ -170,6 +185,7 @@ public class VB extends Engine {
 			if (shiftdown) {
 				bmenu.active = false;
 				bmenu_mat.active = false;
+				bmenu_liv.active = false;
 				shiftdown = false;
 			}
 		}
@@ -177,6 +193,15 @@ public class VB extends Engine {
 	
 	@Override
 	protected void tick() {
+		if (workersm == 0) {
+			workersq = 1;
+		} else {
+			workersq = workersp / workersm;
+			if (workersq > 1) workersq = 1;
+		}
+		workersp = 0;
+		workersm = 0;
+		
 		double k = cam.getTy() / (float) MathLookup.sin(cam.getRx());
 		mousex = (int) Math.floor(k * MathLookup.sin(cam.getRy()) * MathLookup.cos(cam.getRx()) + cam.getTx());
 		mousez = (int) Math.floor(k * MathLookup.cos(cam.getRy()) * MathLookup.cos(cam.getRx()) + cam.getTz());
@@ -184,9 +209,16 @@ public class VB extends Engine {
 		if (!shiftdown && Mouse.isButtonDown(0)) {
 			if (lmup) {
 				lmup = false;
-				if (selectionavailable(Building.sizeX[sb], Building.sizeZ[sb])) {
-					Building b = Building.build(sb, mousex, mousez);
-					if (b != null) buildings.add(b);
+				if (selectionavailable(Building.sizeX[sb], Building.sizeZ[sb]) && Building.canAfford(sb)) {
+					Building b = Building.get(sb, mousex, mousez);
+					if (b != null) {
+						buildings.add(b);
+						goods[0] -= Building.cost[sb][0];
+						goods[1] -= Building.cost[sb][1];
+						goods[2] -= Building.cost[sb][2];
+						goods[3] -= Building.cost[sb][3];
+						goods[4] -= Building.cost[sb][4];
+					}
 				}
 			}
 		} else lmup = true;
@@ -223,11 +255,23 @@ public class VB extends Engine {
 			tex_goods[0] = ResourceLoader.loadTexture("res/img/glogs.png");
 			tex_goods[1] = ResourceLoader.loadTexture("res/img/gstone.png");
 			tex_goods[2] = ResourceLoader.loadTexture("res/img/gbrick.png");
+			tex_goods[3] = ResourceLoader.loadTexture("res/img/gsteel.png");
+			tex_goods[4] = ResourceLoader.loadTexture("res/img/gglass.png");
 			
 			tex_bmenu_mat = ResourceLoader.loadTexture("res/img/bmmat.png");
+			tex_bmenu_liv = ResourceLoader.loadTexture("res/img/bmliv.png");
+			tex_bmenu_liv_0 = ResourceLoader.loadTexture("res/img/person.png");
+			
+			tex_person = tex_bmenu_liv_0;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		goods[0] = 250;
+		goods[1] = 150;
+		goods[2] = 0;
+		goods[3] = 0;
+		goods[4] = 0;
 		
 		initdisplaylists();
 		
@@ -323,13 +367,17 @@ public class VB extends Engine {
 			glBindTexture(GL_TEXTURE_2D, ResourceLoader.white);
 			glColor3f(DiscMenu.COLOR, DiscMenu.COLOR, DiscMenu.COLOR);
 			glBegin(GL_QUADS);
-				glVertex2f(1295, 863);
+				glVertex2f(105, 863);
 				glVertex2f(1595, 863);
 				glVertex2f(1595, 895);
-				glVertex2f(1295, 895);
+				glVertex2f(105, 895);
+				glVertex2f(105, 823);
+				glVertex2f(1595, 823);
+				glVertex2f(1595, 855);
+				glVertex2f(105, 855);
 			glEnd();
 			glColor3f(1, 1, 1);
-			float movex = 1295;
+			float movex = 105;
 			for (int i = 0; i < tex_goods.length; i++) {
 				glBindTexture(GL_TEXTURE_2D, tex_goods[i]);
 				glBegin(GL_QUADS);
@@ -338,12 +386,19 @@ public class VB extends Engine {
 					glTexCoord2f(1, 0); glVertex2f(movex + 24, 887);
 					glTexCoord2f(0, 0); glVertex2f(movex + 8, 887);
 				glEnd();
-				movex += 50;
+				movex += 64;
 			}
+			glBindTexture(GL_TEXTURE_2D, tex_person);
+			glBegin(GL_QUADS);
+				glTexCoord2f(0, 1); glVertex2f(433, 831);
+				glTexCoord2f(1, 1); glVertex2f(449, 831);
+				glTexCoord2f(1, 0); glVertex2f(449, 847);
+				glTexCoord2f(0, 0); glVertex2f(433, 847);
+			glEnd();
 		glEndList();
 
 		try {// misc
-			Building.initDLs();
+			Building.initStatic();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -365,7 +420,7 @@ public class VB extends Engine {
 		bmenu_mat.addItem(new DiscMenuItem() {
 			@Override
 			public void render() {
-				renderDiscMenuIconWithTexture(tex_goods[0]);
+				renderDynDiscMenuIconWithTexture(tex_goods[0], 2);
 			}
 			@Override
 			public void run() {
@@ -375,7 +430,7 @@ public class VB extends Engine {
 		bmenu_mat.addItem(new DiscMenuItem() {
 			@Override
 			public void render() {
-				renderDiscMenuIconWithTexture(tex_goods[1]);
+				renderDynDiscMenuIconWithTexture(tex_goods[1], 3);
 			}
 			@Override
 			public void run() {
@@ -385,11 +440,23 @@ public class VB extends Engine {
 		bmenu_mat.addItem(new DiscMenuItem() {
 			@Override
 			public void render() {
-				renderDiscMenuIconWithTexture(tex_goods[2]);
+				renderDynDiscMenuIconWithTexture(tex_goods[2], 4);
 			}
 			@Override
 			public void run() {
 				sb = 4;
+			}
+		});
+		
+		bmenu_liv = new DiscMenu();
+		bmenu_liv.addItem(new DiscMenuItem() {
+			@Override
+			public void render() {
+				renderDynDiscMenuIconWithTexture(tex_bmenu_liv_0, 1);
+			}
+			@Override
+			public void run() {
+				sb = 1;
 			}
 		});
 		
@@ -404,10 +471,35 @@ public class VB extends Engine {
 				bmenu_mat.active = true;
 			}
 		});
+		bmenu.addItem(new DiscMenuItem() {
+			@Override
+			public void render() {
+				renderDiscMenuIconWithTexture(tex_bmenu_liv);
+			}
+			@Override
+			public void run() {
+				bmenu_liv.active = true;
+			}
+		});
+	}
+	private void renderDynDiscMenuIconWithTexture(int tex, int id) {
+		renderDiscMenuIconWithTexture(tex);
+		if (!Building.canAfford(id)) {
+			glLineWidth(5);
+			glBindTexture(GL_TEXTURE_2D, ResourceLoader.white);
+			glColor3f(1, 0, 0);
+			glBegin(GL_LINES);
+				glVertex2f(-32, -32);
+				glVertex2f(32, 32);
+				glVertex2f(-32, 32);
+				glVertex2f(32, -32);
+			glEnd();
+			glLineWidth(1);
+		}
 	}
 	private void renderDiscMenuIconWithTexture(int tex) {
-		glColor3f(1, 1, 1);
 		glBindTexture(GL_TEXTURE_2D, tex);
+		glColor3f(1, 1, 1);
 		glBegin(GL_QUADS);
 			glTexCoord2f(0, 1); glVertex2f(-32, -32);
 			glTexCoord2f(1, 1); glVertex2f(32, -32);

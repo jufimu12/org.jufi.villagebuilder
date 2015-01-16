@@ -488,6 +488,16 @@ public class Draw {
 				glVertex2f(x+1, y);
 				glVertex2f(x+1, y+1);
 				x+=2;
+			}else if(c == '/'){
+				glVertex2f(x+1, y+1);
+				glVertex2f(x+1, y+2);
+				glVertex2f(x+2, y+3);
+				glVertex2f(x+2, y+4);
+				glVertex2f(x+3, y+5);
+				glVertex2f(x+3, y+6);
+				glVertex2f(x+4, y+7);
+				glVertex2f(x+4, y+8);
+				x += 6;
 			}else if(c == ' '){
 				x += 8;
 			}

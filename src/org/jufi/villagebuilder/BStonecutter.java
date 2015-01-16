@@ -8,8 +8,9 @@ public class BStonecutter extends Building {
 	
 	@Override
 	protected boolean tick() {
-		VB.vb.goods[1] -= 0.0015f;
-		VB.vb.goods[2] += 0.0015f;
+		VB.vb.workersm += 6;
+		VB.vb.goods[1] -= 0.005f * VB.vb.workersq;
+		VB.vb.goods[2] += 0.005f * VB.vb.workersq;
 		return false;
 	}
 

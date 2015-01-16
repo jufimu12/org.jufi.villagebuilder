@@ -8,13 +8,12 @@ public class BLiving extends Building {
 	
 	@Override
 	public boolean tick() {
-		// TODO Auto-generated method stub
+		VB.vb.workersp += 10;
 		return false;
 	}
 
 	@Override
 	public int getID() {
-		// TODO Auto-generated method stub
 		return 1;
 	}
 }

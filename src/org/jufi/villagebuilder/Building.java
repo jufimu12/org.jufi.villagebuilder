@@ -20,6 +20,7 @@ public abstract class Building implements Renderable {
 	public static final int[] sizeX = {0, 4, 4, 4, 4};// TODO on new building
 	public static final int[] sizeY = {0, 3, 3, 3, 6};// TODO on new building
 	public static final int[] sizeZ = {0, 3, 4, 5, 6};// TODO on new building
+	public static final int[][] cost = new int[5][];// TODO on new building
 	private static final int[] BUILD_TIME = {1, 500, 500, 500, 500};// TODO on new building
 	protected int btimeleft = BUILD_TIME[getID()];
 	protected boolean bfinished = false;
@@ -56,20 +57,28 @@ public abstract class Building implements Renderable {
 	protected abstract boolean tick();
 	public abstract int getID();
 	
-	public static final void initDLs() throws IOException {// TODO on new building
+	public static void initStatic() throws IOException {// TODO on new building x2
 		dls[0] = 0;
 		dls[1] = Model.getDL("res/obj/BLiving.obj");
 		dls[2] = Model.getDL("res/obj/BForester.obj");
 		dls[3] = Model.getDL("res/obj/BQuarry.obj");
 		dls[4] = Model.getDL("res/obj/BStonecutter.obj");
+		// {wood, stone, brick, steel, glass}
+		cost[0] = new int[5];
+		cost[1] = new int[] {30, 10, 0, 0, 0};
+		cost[2] = new int[] {50, 10, 0, 0, 0};
+		cost[3] = new int[] {80, 0, 0, 0, 0};
+		cost[4] = new int[] {20, 50, 0, 0, 0};
 	}
-	public static final Building build(int id, int x, int z) {// TODO on new building
-		int sb = id;
-		if (sb <= 0) return null;
-		if (sb == 1) return new BLiving(x, z);
-		if (sb == 2) return new BForester(x, z);
-		if (sb == 3) return new BQuarry(x, z);
-		if (sb == 4) return new BStonecutter(x, z);
+	public static Building get(int id, int x, int z) {// TODO on new building
+		if (id <= 0) return null;
+		if (id == 1) return new BLiving(x, z);
+		if (id == 2) return new BForester(x, z);
+		if (id == 3) return new BQuarry(x, z);
+		if (id == 4) return new BStonecutter(x, z);
 		return null;
+	}
+	public static boolean canAfford(int id) {
+		return VB.vb.goods[0] >= cost[id][0] && VB.vb.goods[1] >= cost[id][1] && VB.vb.goods[2] >= cost[id][2] && VB.vb.goods[3] >= cost[id][3] && VB.vb.goods[4] >= cost[id][4];
 	}
 }

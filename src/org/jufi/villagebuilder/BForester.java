@@ -8,7 +8,8 @@ public class BForester extends Building {
 	
 	@Override
 	protected boolean tick() {
-		VB.vb.goods[0] += 0.0015f;
+		VB.vb.workersm += 4;
+		VB.vb.goods[0] += 0.007f * VB.vb.workersq;
 		return false;
 	}
 
