@@ -16,12 +16,12 @@ int[] sizeX, sizeY, sizeZ, BUILD_TIME, dls, cost
 */
 
 public abstract class Building implements Renderable {
-	public static int[] dls = new int[6];// TODO on new building
-	public static final int[] sizeX = {0, 4, 4, 4, 4, 6};// TODO on new building
-	public static final int[] sizeY = {0, 3, 3, 3, 6, 6};// TODO on new building
-	public static final int[] sizeZ = {0, 3, 4, 5, 6, 6};// TODO on new building
-	public static final int[][] cost = new int[6][];// TODO on new building
-	private static final int[] BUILD_TIME = {1, 500, 500, 500, 500, 240};// TODO on new building
+	public static int[] dls = new int[7];// TODO on new building
+	public static final int[] sizeX = {0, 4, 4, 4, 4, 6, 9};// TODO on new building
+	public static final int[] sizeY = {0, 3, 3, 3, 6, 6, 4};// TODO on new building
+	public static final int[] sizeZ = {0, 3, 4, 5, 6, 6, 8};// TODO on new building
+	public static final int[][] cost = new int[7][];// TODO on new building
+	private static final int[] BUILD_TIME = {1, 1000, 1000, 2000, 4000, 240, 1000};// TODO on new building
 	protected int btimeleft = BUILD_TIME[getID()];
 	protected boolean bfinished = false;
 	protected int x, z;
@@ -64,6 +64,7 @@ public abstract class Building implements Renderable {
 		dls[3] = Model.getDL("res/obj/BQuarry.obj");
 		dls[4] = Model.getDL("res/obj/BStonecutter.obj");
 		dls[5] = Model.getDL("res/obj/BCityHall.obj");
+		dls[6] = Model.getDL("res/obj/BAppleFarm.obj");
 		
 		// {wood, stone, brick, steel, glass}
 		cost[0] = new int[5];
@@ -72,6 +73,7 @@ public abstract class Building implements Renderable {
 		cost[3] = new int[] {80, 0, 0, 0, 0};
 		cost[4] = new int[] {20, 50, 0, 0, 0};
 		cost[5] = new int[] {0, 0, 0, 0, 0};
+		cost[6] = new int[] {50, 10, 0, 0, 0};
 	}
 	public static Building get(int id, int x, int z) {// TODO on new building
 		switch (id) {
@@ -80,6 +82,7 @@ public abstract class Building implements Renderable {
 		case 3: return new BQuarry(x, z);
 		case 4: return new BStonecutter(x, z);
 		case 5: return new BCityHall(x, z);
+		case 6: return new BAppleFarm(x, z);
 		default: return null;
 		}
 	}

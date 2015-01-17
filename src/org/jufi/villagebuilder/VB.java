@@ -1,4 +1,4 @@
-package org.jufi.villagebuilder;
+package org.jufi.villagebuilder;// TODO all used squares marked if sb > 0, bstorage
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -37,11 +37,13 @@ public class VB extends Engine {
 	private ArrayList<Building> buildings = new ArrayList<Building>();
 	private int sb;
 	private int mousex, mousez;
-	public float[] goods = new float[5];
-	private int[] tex_goods = new int[5];
-	private int tex_bmenu_mat, tex_bmenu_liv, tex_bmenu_liv_0, tex_person;
+	public float[] goods = new float[6];
+	private int[] tex_goods = new int[6];
+	private int tex_bmenu_mat, tex_bmenu_liv;
+	private int tex_bmenu_liv_0, tex_bmenu_fod_0;
+	private int tex_person;
 	private int goodlimit = 1000;
-	private DiscMenu bmenu, bmenu_mat, bmenu_liv;
+	private DiscMenu bmenu, bmenu_mat, bmenu_liv, bmenu_fod;
 	public float workersp, workersm, workersq;
 	
 	
@@ -80,9 +82,14 @@ public class VB extends Engine {
 		glEnd();
 		glLineWidth(1);
 		// Nothing here!
-		if (rendermark && selectionavailable(Building.sizeX[sb], Building.sizeZ[sb])) {
-			if (Building.canAfford(sb)) glColor3f(1, 1, 1);
-			else glColor3f(1, 0, 0);
+		if (rendermark) {
+			if (selectionavailable(Building.sizeX[sb], Building.sizeZ[sb])) {
+				if (Building.canAfford(sb)) glColor3f(1, 1, 1);
+				else glColor3f(0.5f, 0.5f, 0.5f);
+			} else {
+				if (Building.canAfford(sb)) glColor3f(1, 0, 0);
+				else glColor3f(0.5f, 0, 0);
+			}
 			glDisable(GL_CULL_FACE);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			glPushMatrix();
@@ -93,7 +100,7 @@ public class VB extends Engine {
 			glEnable(GL_CULL_FACE);
 		}
 		// Nothing here!
-		if (sb != 0 && mousex >= 0 && mousex < MAP_SIZE && mousez >= 0 && mousez < MAP_SIZE) {
+		if (mousex >= 0 && mousex < MAP_SIZE && mousez >= 0 && mousez < MAP_SIZE) {
 			rendermark = true;
 			if (selectionavailable(1, 1)) glColor3f(1, 1, 1);
 			else glColor3f(0.5f, 0.5f, 0.5f);
@@ -141,6 +148,7 @@ public class VB extends Engine {
 		bmenu.render();
 		bmenu_mat.render();
 		bmenu_liv.render();
+		bmenu_fod.render();
 	}
 	
 	@Override
@@ -186,6 +194,7 @@ public class VB extends Engine {
 				bmenu.active = false;
 				bmenu_mat.active = false;
 				bmenu_liv.active = false;
+				bmenu_fod.active = false;
 				shiftdown = false;
 			}
 		}
@@ -329,6 +338,7 @@ public class VB extends Engine {
 		goods[2] = 0;
 		goods[3] = 0;
 		goods[4] = 0;
+		goods[5] = 250;
 	}
 	private void initTex() {
 		try {
@@ -337,10 +347,12 @@ public class VB extends Engine {
 			tex_goods[2] = ResourceLoader.loadTexture("res/img/gbrick.png");
 			tex_goods[3] = ResourceLoader.loadTexture("res/img/gsteel.png");
 			tex_goods[4] = ResourceLoader.loadTexture("res/img/gglass.png");
+			tex_goods[5] = ResourceLoader.loadTexture("res/img/gfood.png");
 			
 			tex_bmenu_mat = ResourceLoader.loadTexture("res/img/bmmat.png");
 			tex_bmenu_liv = ResourceLoader.loadTexture("res/img/bmliv.png");
-			tex_bmenu_liv_0 = ResourceLoader.loadTexture("res/img/person.png");
+			tex_bmenu_liv_0 = ResourceLoader.loadTexture("res/img/sperson.png");
+			tex_bmenu_fod_0 = ResourceLoader.loadTexture("res/img/bmfod_0.png");
 			
 			tex_person = tex_bmenu_liv_0;
 		} catch (IOException e) {
@@ -464,6 +476,18 @@ public class VB extends Engine {
 			}
 		});
 		
+		bmenu_fod = new DiscMenu();
+		bmenu_fod.addItem(new DiscMenuItem() {
+			@Override
+			public void run() {
+				sb = 6;
+			}
+			@Override
+			public void render() {
+				renderDynDiscMenuIconWithTexture(tex_bmenu_fod_0, 6);
+			}
+		});
+		
 		bmenu = new DiscMenu();
 		bmenu.addItem(new DiscMenuItem() {
 			@Override
@@ -483,6 +507,16 @@ public class VB extends Engine {
 			@Override
 			public void run() {
 				bmenu_liv.active = true;
+			}
+		});
+		bmenu.addItem(new DiscMenuItem() {
+			@Override
+			public void render() {
+				renderDiscMenuIconWithTexture(tex_goods[5]);
+			}
+			@Override
+			public void run() {
+				bmenu_fod.active = true;
 			}
 		});
 	}

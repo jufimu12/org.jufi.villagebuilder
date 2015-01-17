@@ -4,10 +4,13 @@ goods:
 	2 Brick
 	3 Steel
 	4 Glass
+	5 Food
 buildings:
-	0 None
+	0 none
 	1 Living house
 	2 Woodcutter
 	3 Quarry
 	4 Stonecutter
 	5 CityHall
+	6 AppleFarm
+	
