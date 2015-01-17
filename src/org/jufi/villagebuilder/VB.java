@@ -2,6 +2,7 @@ package org.jufi.villagebuilder;// TODO all used squares marked if sb > 0, bstor
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -9,6 +10,8 @@ import org.jufi.lwjglutil.*;
 import org.jufi.lwjglutil.Camera.CameraMode;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.Display;
+import org.lwjgl.util.vector.*;
 
 import static org.lwjgl.input.Keyboard.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -31,8 +34,7 @@ public class VB extends Engine {
 	
 	private int dl_map, dl_hud;// VARS
 	private float camheight = 25;
-	private float rmoriginx, rmoriginy, rmmovedx, rmmovedy;
-	private boolean rmdown, lmup, shiftdown;
+	private boolean lmup, shiftdown;
 	private boolean rendermark;
 	private ArrayList<Building> buildings = new ArrayList<Building>();
 	private int sb;
@@ -66,6 +68,8 @@ public class VB extends Engine {
 	
 	@Override
 	protected void render3dNoLighting() {
+		pickGround();// needs matrix, actually should belong to tick
+		
 		glCallList(dl_map);
 		glLineWidth(2);
 		glDisable(GL_DEPTH_TEST);
@@ -153,23 +157,6 @@ public class VB extends Engine {
 	
 	@Override
 	protected void move() {
-		if (rmdown) {
-			cam.setRy(cam.getRy() - rmmovedx);
-			cam.setRx(cam.getRx() - rmmovedy);
-		}
-		if (!rmdown && isKeyDown(KEY_SPACE)) {
-			rmdown = true;
-			rmoriginx = Mouse.getX();
-			rmoriginy = Mouse.getY();
-		}
-		if (rmdown && !isKeyDown(KEY_SPACE)) rmdown = false;
-		if (rmdown) {
-			rmmovedx = (rmoriginx - Mouse.getX()) / 20f;
-			rmmovedy = (Mouse.getY() - rmoriginy) / 20f;
-			cam.setRy(cam.getRy() + rmmovedx);
-			cam.setRx(cam.getRx() + rmmovedy);
-		}
-		
 		if (isKeyDown(KEY_Q)) turnaroundcenter(-2);
 		if (isKeyDown(KEY_E)) turnaroundcenter(2);
 		if (cam.getRy() > 360) cam.setRy(cam.getRy() - 360);
@@ -210,10 +197,6 @@ public class VB extends Engine {
 		}
 		workersp = 0;
 		workersm = 0;
-		
-		double k = cam.getTy() / (float) MathLookup.sin(cam.getRx());
-		mousex = (int) Math.floor(k * MathLookup.sin(cam.getRy()) * MathLookup.cos(cam.getRx()) + cam.getTx());
-		mousez = (int) Math.floor(k * MathLookup.cos(cam.getRy()) * MathLookup.cos(cam.getRx()) + cam.getTz());
 		
 		if (!shiftdown && Mouse.isButtonDown(0)) {
 			if (lmup) {
@@ -331,6 +314,28 @@ public class VB extends Engine {
 			}
 		}
 		return true;
+	}
+	private void pickGround() {
+		Vector4f ray = new Vector4f((2f * Mouse.getX()) / Display.getWidth() - 1f, (2f * Mouse.getY()) / Display.getHeight() - 1f, -1, 1);// clip space
+		
+		FloatBuffer bp = BufferUtils.createFloatBuffer(16);
+		glGetFloat(GL_PROJECTION_MATRIX, bp);
+		Matrix4f p = new Matrix4f();
+		p.load(bp);
+		p.invert();
+		Matrix4f.transform(p, ray, ray);// eye space
+		ray.z = -1f;
+		ray.w = 0f;// ray
+		
+		FloatBuffer bmv = BufferUtils.createFloatBuffer(16);
+		glGetFloat(GL_MODELVIEW_MATRIX, bmv);
+		Matrix4f mv = new Matrix4f();
+		mv.load(bmv);
+		mv.invert();
+		Matrix4f.transform(mv, ray, ray);// world space
+		
+		mousex = (int) Math.floor(cam.getTy() / -ray.y * ray.x + cam.getTx());
+		mousez = (int) Math.floor(cam.getTy() / -ray.y * ray.z + cam.getTz());// y = 0
 	}
 	private void initGoods() {
 		goods[0] = 250;
