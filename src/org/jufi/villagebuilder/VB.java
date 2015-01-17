@@ -238,7 +238,6 @@ public class VB extends Engine {
 	protected void preInit() {
 		
 	}
-	
 	@Override
 	protected void postInit() {
 		try {// shader
@@ -251,35 +250,16 @@ public class VB extends Engine {
 			System.err.println("Failed to init shaders");
 		}
 		
-		try {
-			tex_goods[0] = ResourceLoader.loadTexture("res/img/glogs.png");
-			tex_goods[1] = ResourceLoader.loadTexture("res/img/gstone.png");
-			tex_goods[2] = ResourceLoader.loadTexture("res/img/gbrick.png");
-			tex_goods[3] = ResourceLoader.loadTexture("res/img/gsteel.png");
-			tex_goods[4] = ResourceLoader.loadTexture("res/img/gglass.png");
-			
-			tex_bmenu_mat = ResourceLoader.loadTexture("res/img/bmmat.png");
-			tex_bmenu_liv = ResourceLoader.loadTexture("res/img/bmliv.png");
-			tex_bmenu_liv_0 = ResourceLoader.loadTexture("res/img/person.png");
-			
-			tex_person = tex_bmenu_liv_0;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		goods[0] = 250;
-		goods[1] = 150;
-		goods[2] = 0;
-		goods[3] = 0;
-		goods[4] = 0;
-		
-		initdisplaylists();
-		
+		initGoods();
+		initTex();
+		initDisplayLists();
 		initDiscMenus();
 		
 		glClearColor(0.53f, 0.81f, 0.92f, 1f);
 		
 		Mouse.getDWheel();
+		
+		buildings.add(Building.get(5, MAP_SIZE / 2, MAP_SIZE / 2));
 	}
 	
 	@Override
@@ -291,7 +271,7 @@ public class VB extends Engine {
 		m.setOrthoRes(1600, 900);
 		m.setPerspective(45, 1, 500);
 		m.setTitle("Villagebuilder");
-		m.setTransformation(MAP_SIZE / 2, 25, MAP_SIZE / 2, -45, 45, 0);
+		m.setTransformation(MAP_SIZE / 2 + 25, 25, MAP_SIZE / 2 + 25, -45, 45, 0);
 	}
 	
 	@Override
@@ -332,7 +312,42 @@ public class VB extends Engine {
 		cam.setRy(cam.getRy() + dry);
 		cam.moveY(true, -length);
 	}
-	private void initdisplaylists() {
+	private boolean selectionavailable(int sizeX, int sizeZ) {
+		if (mousex < 0 || mousez < 0 || mousex + sizeX > MAP_SIZE || mousez + sizeZ > MAP_SIZE) return false;
+		for (Building b : buildings) {
+			for (int x = mousex; x <= mousex + sizeX; x++) {
+				for (int z = mousez; z <= mousez + sizeZ; z++) {
+					if (x > b.getX() && x < b.getX() + Building.sizeX[b.getID()] && z > b.getZ() && z < b.getZ() + Building.sizeZ[b.getID()]) return false;
+				}
+			}
+		}
+		return true;
+	}
+	private void initGoods() {
+		goods[0] = 250;
+		goods[1] = 150;
+		goods[2] = 0;
+		goods[3] = 0;
+		goods[4] = 0;
+	}
+	private void initTex() {
+		try {
+			tex_goods[0] = ResourceLoader.loadTexture("res/img/glogs.png");
+			tex_goods[1] = ResourceLoader.loadTexture("res/img/gstone.png");
+			tex_goods[2] = ResourceLoader.loadTexture("res/img/gbrick.png");
+			tex_goods[3] = ResourceLoader.loadTexture("res/img/gsteel.png");
+			tex_goods[4] = ResourceLoader.loadTexture("res/img/gglass.png");
+			
+			tex_bmenu_mat = ResourceLoader.loadTexture("res/img/bmmat.png");
+			tex_bmenu_liv = ResourceLoader.loadTexture("res/img/bmliv.png");
+			tex_bmenu_liv_0 = ResourceLoader.loadTexture("res/img/person.png");
+			
+			tex_person = tex_bmenu_liv_0;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	private void initDisplayLists() {
 		int tex_grass = generateRandomGrassTexture();// grass
 		dl_map = glGenLists(1);
 		glNewList(dl_map, GL_COMPILE);
@@ -403,17 +418,6 @@ public class VB extends Engine {
 			e.printStackTrace();
 		}
 		DiscMenu.initDL(250, 350);
-	}
-	private boolean selectionavailable(int sizeX, int sizeZ) {
-		if (mousex < 0 || mousez < 0 || mousex + sizeX > MAP_SIZE || mousez + sizeZ > MAP_SIZE) return false;
-		for (Building b : buildings) {
-			for (int x = mousex; x <= mousex + sizeX; x++) {
-				for (int z = mousez; z <= mousez + sizeZ; z++) {
-					if (x > b.getX() && x < b.getX() + Building.sizeX[b.getID()] && z > b.getZ() && z < b.getZ() + Building.sizeZ[b.getID()]) return false;
-				}
-			}
-		}
-		return true;
 	}
 	private void initDiscMenus() {
 		bmenu_mat = new DiscMenu();

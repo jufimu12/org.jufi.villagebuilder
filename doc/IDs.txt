@@ -2,9 +2,12 @@ goods:
 	0 Logs
 	1 Stone
 	2 Brick
+	3 Steel
+	4 Glass
 buildings:
 	0 None
 	1 Living house
 	2 Woodcutter
 	3 Quarry
 	4 Stonecutter
+	5 CityHall
