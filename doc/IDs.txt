@@ -13,4 +13,5 @@ buildings:
 	4 Stonecutter
 	5 CityHall
 	6 AppleFarm
+	7 Storage
 	

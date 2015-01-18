@@ -1,4 +1,4 @@
-package org.jufi.villagebuilder;// TODO all used squares marked if sb > 0, bstorage
+package org.jufi.villagebuilder;// TODO rotate building, visually extended map, sb>0:sizes marked, person consume buy info, remove tool, save feature
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -41,11 +41,12 @@ public class VB extends Engine {
 	private int mousex, mousez;
 	public float[] goods = new float[6];
 	private int[] tex_goods = new int[6];
-	private int tex_bmenu_mat, tex_bmenu_liv;
-	private int tex_bmenu_liv_0, tex_bmenu_fod_0;
+	private int tex_bmenu_mat, tex_bmenu_liv, tex_bmenu_spc;
+	private int tex_bmenu_liv_0, tex_bmenu_fod_0, tex_bmenu_spc_0;
 	private int tex_person;
 	private int goodlimit = 1000;
-	private DiscMenu bmenu, bmenu_mat, bmenu_liv, bmenu_fod;
+	public int goodlimittick = 1000;
+	private DiscMenu bmenu, bmenu_mat, bmenu_liv, bmenu_fod, bmenu_spc;
 	public float workersp, workersm, workersq;
 	
 	
@@ -85,8 +86,15 @@ public class VB extends Engine {
 			glVertex3f(0, 0, 1);
 		glEnd();
 		glLineWidth(1);
-		// Nothing here!
+		// Nothing random here! It could override these fragments
 		if (rendermark) {
+			glColor3f(0, 0.5f, 0);
+			glBegin(GL_QUADS);
+				glVertex3f(mousex, 0.01f, mousez);
+				glVertex3f(mousex, 0.01f, mousez + Building.sizeZ[sb]);
+				glVertex3f(mousex + Building.sizeX[sb], 0.01f, mousez + Building.sizeZ[sb]);
+				glVertex3f(mousex + Building.sizeX[sb], 0.01f, mousez);
+			glEnd();
 			if (selectionavailable(Building.sizeX[sb], Building.sizeZ[sb])) {
 				if (Building.canAfford(sb)) glColor3f(1, 1, 1);
 				else glColor3f(0.5f, 0.5f, 0.5f);
@@ -103,7 +111,7 @@ public class VB extends Engine {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			glEnable(GL_CULL_FACE);
 		}
-		// Nothing here!
+		// Nothing random here! It could override these fragments
 		if (mousex >= 0 && mousex < MAP_SIZE && mousez >= 0 && mousez < MAP_SIZE) {
 			rendermark = true;
 			if (selectionavailable(1, 1)) glColor3f(1, 1, 1);
@@ -118,7 +126,6 @@ public class VB extends Engine {
 			rendermark = false;
 		}
 		glEnable(GL_DEPTH_TEST);
-		// Nothing here! It could override these fragments
 	}
 	
 	@Override
@@ -148,11 +155,13 @@ public class VB extends Engine {
 			movex += 64;
 		}
 		Draw.drawString((int) workersp + " / " + (int) workersm + " / " + Math.floor(workersq * 100f) / 100f, 457, 835, 1, 1, 1);
+		Draw.drawString(goodlimit, 649, 835, 1, 1, 1);
 		
 		bmenu.render();
 		bmenu_mat.render();
 		bmenu_liv.render();
 		bmenu_fod.render();
+		bmenu_spc.render();
 	}
 	
 	@Override
@@ -182,6 +191,7 @@ public class VB extends Engine {
 				bmenu_mat.active = false;
 				bmenu_liv.active = false;
 				bmenu_fod.active = false;
+				bmenu_spc.active = false;
 				shiftdown = false;
 			}
 		}
@@ -197,6 +207,10 @@ public class VB extends Engine {
 		}
 		workersp = 0;
 		workersm = 0;
+		
+		goodlimit = goodlimittick;
+		goodlimittick = 1000;
+		if (goodlimit > 9999) goodlimit = 9999;
 		
 		if (!shiftdown && Mouse.isButtonDown(0)) {
 			if (lmup) {
@@ -356,8 +370,10 @@ public class VB extends Engine {
 			
 			tex_bmenu_mat = ResourceLoader.loadTexture("res/img/bmmat.png");
 			tex_bmenu_liv = ResourceLoader.loadTexture("res/img/bmliv.png");
-			tex_bmenu_liv_0 = ResourceLoader.loadTexture("res/img/sperson.png");
+			tex_bmenu_spc = ResourceLoader.loadTexture("res/img/bmspc.png");
+			tex_bmenu_liv_0 = ResourceLoader.loadTexture("res/img/bmliv_0.png");
 			tex_bmenu_fod_0 = ResourceLoader.loadTexture("res/img/bmfod_0.png");
+			tex_bmenu_spc_0 = ResourceLoader.loadTexture("res/img/bmspc_0.png");
 			
 			tex_person = tex_bmenu_liv_0;
 		} catch (IOException e) {
@@ -427,6 +443,13 @@ public class VB extends Engine {
 				glTexCoord2f(1, 0); glVertex2f(449, 847);
 				glTexCoord2f(0, 0); glVertex2f(433, 847);
 			glEnd();
+			glBindTexture(GL_TEXTURE_2D, tex_bmenu_spc_0);
+			glBegin(GL_QUADS);
+				glTexCoord2f(0, 1); glVertex2f(625, 831);
+				glTexCoord2f(1, 1); glVertex2f(641, 831);
+				glTexCoord2f(1, 0); glVertex2f(641, 847);
+				glTexCoord2f(0, 0); glVertex2f(625, 847);
+			glEnd();
 		glEndList();
 
 		try {// misc
@@ -484,12 +507,24 @@ public class VB extends Engine {
 		bmenu_fod = new DiscMenu();
 		bmenu_fod.addItem(new DiscMenuItem() {
 			@Override
+			public void render() {
+				renderDynDiscMenuIconWithTexture(tex_bmenu_fod_0, 6);
+			}
+			@Override
 			public void run() {
 				sb = 6;
 			}
+		});
+		
+		bmenu_spc = new DiscMenu();
+		bmenu_spc.addItem(new DiscMenuItem() {
 			@Override
 			public void render() {
-				renderDynDiscMenuIconWithTexture(tex_bmenu_fod_0, 6);
+				renderDynDiscMenuIconWithTexture(tex_bmenu_spc_0, 7);
+			}
+			@Override
+			public void run() {
+				sb = 7;
 			}
 		});
 		
@@ -522,6 +557,16 @@ public class VB extends Engine {
 			@Override
 			public void run() {
 				bmenu_fod.active = true;
+			}
+		});
+		bmenu.addItem(new DiscMenuItem() {
+			@Override
+			public void render() {
+				renderDiscMenuIconWithTexture(tex_bmenu_spc);
+			}
+			@Override
+			public void run() {
+				bmenu_spc.active = true;
 			}
 		});
 	}

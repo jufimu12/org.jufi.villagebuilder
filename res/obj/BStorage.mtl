@@ -1,20 +1,14 @@
+newmtl cobblestone
+Ns 96.078431
+Ka 0.10 0.10 0.10
+Kd 0.10 0.10 0.10
+Ks 1.00 1.00 1.00
+
 newmtl darklogs
 Ns 96.078431
 Ka 0.55 0.35 0.17
 Kd 0.55 0.35 0.17
 Ks 0.50 0.50 0.50
-
-newmtl leaves
-Ns 96.078431
-Ka 0.40 0.80 0.00
-Kd 0.40 0.80 0.00
-Ks 0.00 0.00 0.00
-
-newmtl logs
-Ns 96.078431
-Ka 1.00 0.65 0.31
-Kd 1.00 0.65 0.31
-Ks 1.00 1.00 1.00
 
 newmtl roof
 Ns 96.078431
