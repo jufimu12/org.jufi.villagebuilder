@@ -1,0 +1,5 @@
+W/A/S/D: move camera
+Q/E: rotate camera
+SPACE: building menu
+X: removal tool
+RIGHT MOUSE: unselect

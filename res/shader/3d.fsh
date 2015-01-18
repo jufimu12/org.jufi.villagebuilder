@@ -1,6 +1,6 @@
 varying vec4 diffuse,ambient;
 varying vec3 normal,halfVector;
-varying float depth;
+varying vec4 position;
 uniform sampler2D tex0;
 
 void main()
@@ -16,5 +16,5 @@ void main()
 	
 	color *= texture2D(tex0, gl_TexCoord[0].st);
 	
-	gl_FragColor = mix(vec4(0.8, 0.8, 0.8, 1.0), color, clamp(exp(-pow(0.01*depth, 2.0)), 0.0, 1.0));
+	gl_FragColor = mix(vec4(0.8, 0.8, 0.8, 1.0), color, clamp(exp(-pow(0.01*length(position), 2.0)), 0.0, 1.0));
 }

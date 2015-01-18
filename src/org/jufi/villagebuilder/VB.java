@@ -1,10 +1,17 @@
-package org.jufi.villagebuilder;// TODO rotate building, visually extended map, sb>0:sizes marked, person consume buy info, remove tool, save feature
+package org.jufi.villagebuilder;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
+
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 import org.jufi.lwjglutil.*;
 import org.jufi.lwjglutil.Camera.CameraMode;
@@ -34,20 +41,22 @@ public class VB extends Engine {
 	
 	private int dl_map, dl_hud;// VARS
 	private float camheight = 25;
-	private boolean lmup, shiftdown;
+	private boolean lmup, shiftdown, rup;
 	private boolean rendermark;
+	private boolean rmtool;
 	private ArrayList<Building> buildings = new ArrayList<Building>();
-	private int sb;
+	private int sb, br;
 	private int mousex, mousez;
 	public float[] goods = new float[6];
 	private int[] tex_goods = new int[6];
 	private int tex_bmenu_mat, tex_bmenu_liv, tex_bmenu_spc;
 	private int tex_bmenu_liv_0, tex_bmenu_fod_0, tex_bmenu_spc_0;
-	private int tex_person;
+	private int tex_smiley;
 	private int goodlimit = 1000;
 	public int goodlimittick = 1000;
 	private DiscMenu bmenu, bmenu_mat, bmenu_liv, bmenu_fod, bmenu_spc;
-	public float workersp, workersm, workersq;
+	public float workersp, workersm, workersq, workersc;
+	public float happiness = 100;
 	
 	
 	@Override// FUNCTIONS
@@ -72,6 +81,7 @@ public class VB extends Engine {
 		pickGround();// needs matrix, actually should belong to tick
 		
 		glCallList(dl_map);
+		
 		glLineWidth(2);
 		glDisable(GL_DEPTH_TEST);
 		glBegin(GL_LINES);
@@ -88,34 +98,57 @@ public class VB extends Engine {
 		glLineWidth(1);
 		// Nothing random here! It could override these fragments
 		if (rendermark) {
-			glColor3f(0, 0.5f, 0);
-			glBegin(GL_QUADS);
-				glVertex3f(mousex, 0.01f, mousez);
-				glVertex3f(mousex, 0.01f, mousez + Building.sizeZ[sb]);
-				glVertex3f(mousex + Building.sizeX[sb], 0.01f, mousez + Building.sizeZ[sb]);
-				glVertex3f(mousex + Building.sizeX[sb], 0.01f, mousez);
-			glEnd();
-			if (selectionavailable(Building.sizeX[sb], Building.sizeZ[sb])) {
-				if (Building.canAfford(sb)) glColor3f(1, 1, 1);
-				else glColor3f(0.5f, 0.5f, 0.5f);
-			} else {
-				if (Building.canAfford(sb)) glColor3f(1, 0, 0);
-				else glColor3f(0.5f, 0, 0);
-			}
 			glDisable(GL_CULL_FACE);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			glPushMatrix();
 				glTranslatef(mousex, 0, mousez);
+				switch (br) {
+				case 0:
+					break;
+				case 1:
+					glTranslatef(0, 0, 1);
+					glRotatef(90, 0, 1, 0);
+					break;
+				case 2:
+					glTranslatef(1, 0, 1);
+					glRotatef(180, 0, 1, 0);
+					break;
+				case 3:
+					glTranslatef(1, 0, 0);
+					glRotatef(270, 0, 1, 0);
+					break;
+				default:
+					System.err.println("Invalid br in VB");
+				}
+				glColor3f(0, 0.5f, 0);
+				glBegin(GL_QUADS);
+					glVertex3f(0, 0, 0);
+					glVertex3f(0, 0, Building.sizeZ[sb]);
+					glVertex3f(Building.sizeX[sb], 0, Building.sizeZ[sb]);
+					glVertex3f(Building.sizeX[sb], 0, 0);
+				glEnd();
+
+				if (selectionavailable()) {
+					if (Building.canAfford(sb)) glColor3f(1, 1, 1);
+					else glColor3f(0.5f, 0.5f, 0.5f);
+				} else {
+					if (Building.canAfford(sb)) glColor3f(1, 0, 0);
+					else glColor3f(0.5f, 0, 0);
+				}
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				glCallList(Building.dls[sb]);
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			glPopMatrix();
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			glEnable(GL_CULL_FACE);
 		}
 		// Nothing random here! It could override these fragments
 		if (mousex >= 0 && mousex < MAP_SIZE && mousez >= 0 && mousez < MAP_SIZE) {
 			rendermark = true;
-			if (selectionavailable(1, 1)) glColor3f(1, 1, 1);
-			else glColor3f(0.5f, 0.5f, 0.5f);
+			if (rmtool) {
+				glColor3f(1, 0, 0);
+			} else {
+				if (Building.occupied(mousex, mousez, buildings)) glColor3f(0.5f, 0.5f, 0.5f);
+				else glColor3f(1, 1, 1);
+			}
 			glBegin(GL_QUADS);
 				glVertex3f(mousex, 0, mousez);
 				glVertex3f(mousex, 0, mousez + 1);
@@ -124,6 +157,14 @@ public class VB extends Engine {
 			glEnd();
 		} else {
 			rendermark = false;
+		}
+		// Nothing random here! It could override these fragments
+		if (sb > 0) {
+			glLineWidth(5);
+			for (Building b : buildings) {
+				b.renderContour(sb, br, mousex, mousez);
+			}
+			glLineWidth(1);
 		}
 		glEnable(GL_DEPTH_TEST);
 	}
@@ -144,6 +185,12 @@ public class VB extends Engine {
 		}
 		glCallList(dl_hud);
 		glBindTexture(GL_TEXTURE_2D, ResourceLoader.white);
+		Draw.drawString("X " + (int) cam.getTx(), 1, 860, 1, 1, 1);
+		Draw.drawString("Y " + (int) cam.getTy(), 1, 850, 1, 1, 1);
+		Draw.drawString("Z " + (int) cam.getTz(), 1, 840, 1, 1, 1);
+		Draw.drawString("R " + (int) cam.getRy(), 1, 830, 1, 1, 1);
+		Draw.drawString("MX" + mousex, 1, 820, 1, 1, 1);
+		Draw.drawString("MZ" + mousez, 1, 810, 1, 1, 1);
 		int movex = 137;
 		for (int i = 0; i < tex_goods.length; i++) {
 			Draw.drawString((int) goods[i], movex, 875, 1, 1, 1);
@@ -154,8 +201,13 @@ public class VB extends Engine {
 			}
 			movex += 64;
 		}
-		Draw.drawString((int) workersp + " / " + (int) workersm + " / " + Math.floor(workersq * 100f) / 100f, 457, 835, 1, 1, 1);
+		Draw.drawString((int) workersc + " / " + (int) workersp + " / " + (int) workersm + " / " + Math.floor(workersq * 100f) / 100f, 457, 835, 1, 1, 1);
+		if (sb > 0) Draw.drawString(Building.cost[sb][5], 457, 810, 1, 1, 1);
 		Draw.drawString(goodlimit, 649, 835, 1, 1, 1);
+		float hr = 1, hg = 1;
+		if (happiness >= 0) hr -= happiness / 100f;
+		else hg += happiness / 100f;
+		Draw.drawString((int) happiness, 713, 835, hr, hg, 0);
 		
 		bmenu.render();
 		bmenu_mat.render();
@@ -174,14 +226,25 @@ public class VB extends Engine {
 		if (isKeyDown(KEY_S)) cam.moveNoY(true, -CAM_SPEED * camheight);
 		if (isKeyDown(KEY_A)) cam.moveNoY(false, CAM_SPEED * camheight);
 		if (isKeyDown(KEY_D)) cam.moveNoY(false, -CAM_SPEED * camheight);
+		if (cam.getTx() < -50) cam.setTx(-50);
+		if (cam.getTx() > MAP_SIZE + 50) cam.setTx(MAP_SIZE + 50);
+		if (cam.getTz() < -50) cam.setTz(-50);
+		if (cam.getTz() > MAP_SIZE + 50) cam.setTz(MAP_SIZE + 50);
 		float oldcamheight = camheight;
 		camheight -= Mouse.getDWheel() / 24f;
 		if (camheight < 10) camheight = 10;
 		if (camheight > 100) camheight = 100;
 		cam.moveY(true, oldcamheight - camheight);
-		if (Mouse.isButtonDown(1)) sb = 0;
-		if (isKeyDown(KEY_LSHIFT)) {
-			if (!shiftdown) {
+		if (isKeyDown(KEY_X) && !shiftdown) {
+			rmtool = true;
+			sb = 0;
+		}
+		if (Mouse.isButtonDown(1)) {
+			rmtool = false;
+			sb = 0;
+		}
+		if (isKeyDown(KEY_SPACE)) {
+			if (!shiftdown && !rmtool) {
 				bmenu.active = true;
 				shiftdown = true;
 			}
@@ -195,6 +258,15 @@ public class VB extends Engine {
 				shiftdown = false;
 			}
 		}
+		if (isKeyDown(KEY_R)) {
+			if (rup && sb > 0) {
+				br++;
+				if (br > 3) br = 0;
+			}
+			rup = false;
+		} else rup = true;
+		if (isKeyDown(KEY_F9)) save();
+		if (isKeyDown(KEY_F10)) load();
 	}
 	
 	@Override
@@ -207,16 +279,28 @@ public class VB extends Engine {
 		}
 		workersp = 0;
 		workersm = 0;
+		workersc = 0;
 		
 		goodlimit = goodlimittick;
 		goodlimittick = 1000;
 		if (goodlimit > 9999) goodlimit = 9999;
 		
+		if (happiness < -100) happiness = -100;
+		if (happiness > 100) happiness = 100;
+		
 		if (!shiftdown && Mouse.isButtonDown(0)) {
 			if (lmup) {
 				lmup = false;
-				if (selectionavailable(Building.sizeX[sb], Building.sizeZ[sb]) && Building.canAfford(sb)) {
-					Building b = Building.get(sb, mousex, mousez);
+				if (rmtool) {
+					Iterator<Building> ib = buildings.iterator();
+					Building b;
+					while (ib.hasNext()) {
+						b = ib.next();
+						if (b.occupies(mousex, mousez) && b.getID() != 5) ib.remove();
+					}
+				}
+				if (sb > 0 && selectionavailable() && Building.canAfford(sb)) {
+					Building b = Building.get(sb, mousex, mousez, br);
 					if (b != null) {
 						buildings.add(b);
 						goods[0] -= Building.cost[sb][0];
@@ -230,27 +314,30 @@ public class VB extends Engine {
 		} else lmup = true;
 		
 		Iterator<Building> ib = buildings.iterator();
-		Building b;
 		while (ib.hasNext()) {
-			b = ib.next();
-			if (b.run()) ib.remove();
+			if (ib.next().run()) ib.remove();
 		}
+		
 		for (int i = 0; i < goods.length; i++) {
 			if (goods[i] > goodlimit) goods[i] = goodlimit;
+			if (goods[i] < 0) goods[i] = 0;
 		}
+		if (goods[5] == 0) happiness -= 0.008f;
+		else happiness += 0.002f;
 	}
 	
 	@Override
 	protected void preInit() {
-		
+		System.out.println("Launching Villagebuilder");
 	}
 	@Override
 	protected void postInit() {
+		System.out.println("Loading Resources");
 		try {// shader
 			sh_main = new int[3];
 			sh_main[0] = ResourceLoader.loadShader("res/shader/3d.vsh", "res/shader/3d.fsh")[0];
-			sh_main[1] = ResourceLoader.loadShader("res/shader/2d.vsh", "res/shader/2d.fsh")[0];
-			sh_main[2] = sh_main[1];
+			sh_main[1] = ResourceLoader.loadShader("res/shader/3dnl.vsh", "res/shader/3dnl.fsh")[0];
+			sh_main[2] = ResourceLoader.loadShader("res/shader/2d.vsh", "res/shader/2d.fsh")[0];
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.err.println("Failed to init shaders");
@@ -262,10 +349,9 @@ public class VB extends Engine {
 		initDiscMenus();
 		
 		glClearColor(0.53f, 0.81f, 0.92f, 1f);
-		
 		Mouse.getDWheel();
-		
-		buildings.add(Building.get(5, MAP_SIZE / 2, MAP_SIZE / 2));
+		buildings.add(Building.get(5, MAP_SIZE / 2, MAP_SIZE / 2, 0));
+		System.out.println("Done");
 	}
 	
 	@Override
@@ -318,14 +404,37 @@ public class VB extends Engine {
 		cam.setRy(cam.getRy() + dry);
 		cam.moveY(true, -length);
 	}
-	private boolean selectionavailable(int sizeX, int sizeZ) {
-		if (mousex < 0 || mousez < 0 || mousex + sizeX > MAP_SIZE || mousez + sizeZ > MAP_SIZE) return false;
-		for (Building b : buildings) {
-			for (int x = mousex; x <= mousex + sizeX; x++) {
-				for (int z = mousez; z <= mousez + sizeZ; z++) {
-					if (x > b.getX() && x < b.getX() + Building.sizeX[b.getID()] && z > b.getZ() && z < b.getZ() + Building.sizeZ[b.getID()]) return false;
+	private boolean selectionavailable() {
+		if (mousex < 0 || mousez < 0 || mousex + Building.sizeX[sb] > MAP_SIZE || mousez + Building.sizeZ[sb] > MAP_SIZE) return false;
+		switch (br) {
+		case 0:
+			for (int x = mousex; x < mousex + Building.sizeX[sb]; x++) {
+				for (int z = mousez; z < mousez + Building.sizeZ[sb]; z++) {
+					if (Building.occupied(x, z, buildings)) return false;
 				}
 			}
+			break;
+		case 1:
+			for (int x = mousex; x < mousex + Building.sizeZ[sb]; x++) {
+				for (int z = mousez - Building.sizeX[sb] + 1; z <= mousez; z++) {
+					if (Building.occupied(x, z, buildings)) return false;
+				}
+			}
+			break;
+		case 2:
+			for (int x = mousex - Building.sizeX[sb] + 1; x <= mousex; x++) {
+				for (int z = mousez - Building.sizeZ[sb] + 1; z <= mousez; z++) {
+					if (Building.occupied(x, z, buildings)) return false;
+				}
+			}
+			break;
+		case 3:
+			for (int x = mousex - Building.sizeZ[sb] + 1; x <= mousex; x++) {
+				for (int z = mousez; z < mousez + Building.sizeX[sb]; z++) {
+					if (Building.occupied(x, z, buildings)) return false;
+				}
+			}
+			break;
 		}
 		return true;
 	}
@@ -375,8 +484,9 @@ public class VB extends Engine {
 			tex_bmenu_fod_0 = ResourceLoader.loadTexture("res/img/bmfod_0.png");
 			tex_bmenu_spc_0 = ResourceLoader.loadTexture("res/img/bmspc_0.png");
 			
-			tex_person = tex_bmenu_liv_0;
+			tex_smiley = ResourceLoader.loadTexture("res/img/ssmiley.png");
 		} catch (IOException e) {
+			System.err.println("While loading textures:");
 			e.printStackTrace();
 		}
 	}
@@ -387,8 +497,8 @@ public class VB extends Engine {
 			glBindTexture(GL_TEXTURE_2D, tex_grass);
 			glColor3f(1, 1, 1);
 			glBegin(GL_TRIANGLES);
-				for (int x = 0; x < MAP_SIZE; x += MAP_SIZE / MAP_DIV) {
-					for (int y = 0; y < MAP_SIZE; y += MAP_SIZE / MAP_DIV) {
+				for (int x = -MAP_SIZE * 2; x < 3 * MAP_SIZE; x += MAP_SIZE / MAP_DIV) {
+					for (int y = -MAP_SIZE * 2; y < 3 * MAP_SIZE; y += MAP_SIZE / MAP_DIV) {
 						glTexCoord2f(0, 0); glVertex3f(0 + x, 0, 0 + y);
 						glTexCoord2f(1, 1); glVertex3f(MAP_SIZE / MAP_DIV + x, 0, MAP_SIZE / MAP_DIV + y);
 						glTexCoord2f(1, 0); glVertex3f(MAP_SIZE / MAP_DIV + x, 0, 0 + y);
@@ -401,12 +511,19 @@ public class VB extends Engine {
 			glBindTexture(GL_TEXTURE_2D, ResourceLoader.white);
 			glColor3f(0, 0, 0);
 			glBegin(GL_LINES);
-			for (int i = 1; i < MAP_SIZE; i++) {
-				glVertex3f(i, 0, 0);
-				glVertex3f(i, 0, MAP_SIZE);
-				glVertex3f(0, 0, i);
-				glVertex3f(MAP_SIZE, 0, i);
-			}
+				for (int i = 1; i < MAP_SIZE; i++) {
+					glVertex3f(i, 0, 0);
+					glVertex3f(i, 0, MAP_SIZE);
+					glVertex3f(0, 0, i);
+					glVertex3f(MAP_SIZE, 0, i);
+				}
+			glEnd();
+			glColor3f(1, 0, 0);
+			glBegin(GL_LINE_LOOP);
+				glVertex3f(0, 0, 0);
+				glVertex3f(0, 0, MAP_SIZE);
+				glVertex3f(MAP_SIZE, 0, MAP_SIZE);
+				glVertex3f(MAP_SIZE, 0, 0);
 			glEnd();
 		glEndList();
 		
@@ -436,7 +553,7 @@ public class VB extends Engine {
 				glEnd();
 				movex += 64;
 			}
-			glBindTexture(GL_TEXTURE_2D, tex_person);
+			glBindTexture(GL_TEXTURE_2D, tex_bmenu_liv_0);
 			glBegin(GL_QUADS);
 				glTexCoord2f(0, 1); glVertex2f(433, 831);
 				glTexCoord2f(1, 1); glVertex2f(449, 831);
@@ -449,6 +566,13 @@ public class VB extends Engine {
 				glTexCoord2f(1, 1); glVertex2f(641, 831);
 				glTexCoord2f(1, 0); glVertex2f(641, 847);
 				glTexCoord2f(0, 0); glVertex2f(625, 847);
+			glEnd();
+			glBindTexture(GL_TEXTURE_2D, tex_smiley);
+			glBegin(GL_QUADS);
+				glTexCoord2f(0, 1); glVertex2f(689, 831);
+				glTexCoord2f(1, 1); glVertex2f(705, 831);
+				glTexCoord2f(1, 0); glVertex2f(705, 847);
+				glTexCoord2f(0, 0); glVertex2f(689, 847);
 			glEnd();
 		glEndList();
 
@@ -594,5 +718,76 @@ public class VB extends Engine {
 			glTexCoord2f(1, 0); glVertex2f(32, 32);
 			glTexCoord2f(0, 0); glVertex2f(-32, 32);
 		glEnd();
+	}
+	private void save() {
+		BufferedWriter target = null;
+		try {
+			JFileChooser fc = new JFileChooser();
+			if (fc.showSaveDialog(null) != JFileChooser.APPROVE_OPTION) return;
+			target = new BufferedWriter(new FileWriter(fc.getSelectedFile()));
+			
+			for (int i = 0; i < goods.length; i++) {
+				target.write("g " + i + " " + goods[i]);
+				target.newLine();
+			}
+			
+			for (Building b : buildings) {
+				target.write("b " + b.getID() + " " + b.getX() + " " + b.getZ() + " " + b.getBR());
+				target.newLine();
+			}
+			JOptionPane.showMessageDialog(null, "Succesfully saved the game", "Success", JOptionPane.INFORMATION_MESSAGE);
+		} catch (IOException e) {
+			System.err.println("Exception while trying to save game:");
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, "Something went wrong. See console log for details", "Error", JOptionPane.ERROR_MESSAGE);
+		} finally {
+			if (target != null) {
+				try {
+					target.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	private void load() {
+		Building.takestimetobuild = false;
+		float[] newgoods = new float[goods.length];
+		ArrayList<Building> newbuildings = new ArrayList<Building>();
+		BufferedReader source = null;
+		try {
+			JFileChooser fc = new JFileChooser();
+			if (fc.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) return;
+			source = new BufferedReader(new FileReader(fc.getSelectedFile()));
+			
+			for (String in = source.readLine(); in != null; in = source.readLine()) {
+				String[] args = in.split(" ");
+				switch (args[0]) {
+				case "g":
+					newgoods[Integer.parseInt(args[1])] = Float.parseFloat(args[2]);
+					break;
+				case "b":
+					newbuildings.add(Building.get(Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4])));
+					break;
+				default:
+					System.out.println("Invalid line in input file:");
+					System.out.println(in);
+				}
+			}
+			goods = newgoods;
+			buildings = newbuildings;
+		} catch (IOException e) {
+			System.err.println("Failed to load game");
+			e.printStackTrace();
+		} finally {
+			if (source != null) {
+				try {
+					source.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		Building.takestimetobuild = true;
 	}
 }

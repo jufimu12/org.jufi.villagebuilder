@@ -2,8 +2,8 @@ package org.jufi.villagebuilder;
 
 public class BCityHall extends Building {
 
-	public BCityHall(int x, int z) {
-		super(x, z);
+	public BCityHall(int x, int z, int br) {
+		super(x, z, br);
 	}
 
 	@Override

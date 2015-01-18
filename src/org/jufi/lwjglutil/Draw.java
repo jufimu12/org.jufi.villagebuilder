@@ -529,11 +529,11 @@ public class Draw {
 		drawStringBG(String.valueOf(s), x, y, r, g, b);
 	}
 	
-	public static void drawDisk(float r, int s) {
+	public static void drawDisk(float r, int step) {
 		glBegin(GL_TRIANGLES);
-			for (int i = 0; i < 360; i += s) {
+			for (int i = 0; i < 360; i += step) {
 				glVertex2f(0, 0);
-				glVertex2f((float) MathLookup.sin(i + s) * r, (float) MathLookup.cos(i + s) * r);
+				glVertex2f((float) MathLookup.sin(i + step) * r, (float) MathLookup.cos(i + step) * r);
 				glVertex2f((float) MathLookup.sin(i) * r, (float) MathLookup.cos(i) * r);
 			}
 		glEnd();

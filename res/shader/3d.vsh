@@ -1,6 +1,6 @@
 varying vec4 diffuse,ambient;
 varying vec3 normal,halfVector;
-varying float depth;
+varying vec4 position;
 
 void main()
 {
@@ -10,6 +10,6 @@ void main()
 	halfVector = gl_LightSource[0].halfVector.xyz;
 	diffuse = gl_FrontMaterial.diffuse * gl_LightSource[0].diffuse;
 	ambient = gl_FrontMaterial.ambient * (gl_LightSource[0].ambient + gl_LightModel.ambient);
-	depth = gl_Position.z;
+	position = gl_Position;
 	gl_TexCoord[0]  = gl_MultiTexCoord0;
 }
