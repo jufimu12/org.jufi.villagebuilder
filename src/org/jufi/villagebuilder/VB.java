@@ -1,4 +1,4 @@
-package org.jufi.villagebuilder;
+package org.jufi.villagebuilder;// TODO (engine) add glgeterrors to loop
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -126,7 +126,7 @@ public class VB extends Engine {
 					glVertex3f(Building.sizeX[sb], 0, Building.sizeZ[sb]);
 					glVertex3f(Building.sizeX[sb], 0, 0);
 				glEnd();
-
+				
 				if (selectionavailable()) {
 					if (Building.canAfford(sb)) glColor3f(1, 1, 1);
 					else glColor3f(0.5f, 0.5f, 0.5f);
@@ -135,7 +135,7 @@ public class VB extends Engine {
 					else glColor3f(0.5f, 0, 0);
 				}
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-				glCallList(Building.dls[sb]);
+				if (sb > 0) glCallList(Building.dls[sb]);
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			glPopMatrix();
 			glEnable(GL_CULL_FACE);
