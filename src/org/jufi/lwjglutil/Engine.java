@@ -2,6 +2,7 @@ package org.jufi.lwjglutil;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.util.glu.GLU.gluErrorString;
 import static org.lwjgl.input.Keyboard.*;
 
 import java.io.IOException;
@@ -27,7 +28,8 @@ public abstract class Engine extends Thread {
 	
 	public final void run() {
 		initEverything();
-		
+		int err;
+        
 		while (!Display.isCloseRequested() && !(Keyboard.isKeyDown(KEY_Q) && Keyboard.isKeyDown(KEY_LCONTROL))) {// Main loop
 			if (exitmainloop) {
 				cam.cleanup();
@@ -38,6 +40,8 @@ public abstract class Engine extends Thread {
 				System.gc();
 				timetogc = 1000;
 			}
+            err = glGetError();
+            if (err != GL_NO_ERROR) System.err.println(gluErrorString(err));
 			input();
 			tick();
 			fps.tick();
