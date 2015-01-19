@@ -1,4 +1,4 @@
-package org.jufi.villagebuilder;// TODO (engine) add glgeterrors to loop
+package org.jufi.villagebuilder;// TODO cityhall control interface -> food
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -30,6 +30,7 @@ public class VB extends Engine {
 	public static final int MAP_DIV = 4;
 	public static final int GRASS_RES = 512;
 	public static final float CAM_SPEED = 0.03f;
+	public static final float BGC = 1f / 16f;
 	
 	public static VB vb;
 	
@@ -46,7 +47,7 @@ public class VB extends Engine {
 	private boolean rmtool;
 	private ArrayList<Building> buildings = new ArrayList<Building>();
 	private int sb, br;
-	private int mousex, mousez;
+	public int mousex, mousez;
 	public float[] goods = new float[6];
 	private int[] tex_goods = new int[6];
 	private int tex_bmenu_mat, tex_bmenu_liv, tex_bmenu_spc;
@@ -56,7 +57,7 @@ public class VB extends Engine {
 	public int goodlimittick = 1000;
 	private DiscMenu bmenu, bmenu_mat, bmenu_liv, bmenu_fod, bmenu_spc;
 	public float workersp, workersm, workersq, workersc;
-	public float happiness = 100;
+	public float happiness = 100, dhappiness;
 	
 	
 	@Override// FUNCTIONS
@@ -159,13 +160,23 @@ public class VB extends Engine {
 			rendermark = false;
 		}
 		// Nothing random here! It could override these fragments
+		glLineWidth(5);
+		glPointSize(5);
 		if (sb > 0) {
-			glLineWidth(5);
 			for (Building b : buildings) {
-				b.renderContour(sb, br, mousex, mousez);
+				b.renderDynContour(sb, br);
 			}
-			glLineWidth(1);
+		} else if (!shiftdown) {
+			for (Building b : buildings) {
+				if (b.occupies(mousex, mousez)) {
+					if (rmtool && b.getID() != 5) glColor3f(1, 0, 0);
+					else glColor3f(1, 1, 1);
+					b.renderStatContour();
+				}
+			}
 		}
+		glLineWidth(1);
+		glPointSize(1);
 		glEnable(GL_DEPTH_TEST);
 	}
 	
@@ -201,13 +212,22 @@ public class VB extends Engine {
 			}
 			movex += 64;
 		}
-		Draw.drawString((int) workersc + " / " + (int) workersp + " / " + (int) workersm + " / " + Math.floor(workersq * 100f) / 100f, 457, 835, 1, 1, 1);
+		Draw.drawString((int) workersc + " / " + (int) workersp + " / " + (int) workersm + " / " + (int) (workersq * 100f), 457, 835, 1, 1, 1);
 		if (sb > 0) Draw.drawString(Building.cost[sb][5], 457, 810, 1, 1, 1);
-		Draw.drawString(goodlimit, 649, 835, 1, 1, 1);
+		Draw.drawString(Math.floor(goodlimit / 100f) / 10f + "k", 649, 835, 1, 1, 1);
 		float hr = 1, hg = 1;
 		if (happiness >= 0) hr -= happiness / 100f;
 		else hg += happiness / 100f;
-		Draw.drawString((int) happiness, 713, 835, hr, hg, 0);
+		Draw.drawString((int) happiness + " / " + Math.floor(dhappiness * 6000f) / 100f, 713, 835, hr, hg, 0);
+		happiness += dhappiness;
+		dhappiness = 0;
+		
+		glPushMatrix();
+			glTranslatef(1000, 0, 0);
+			for (Building b : buildings) {
+				b.run2d();
+			}
+		glPopMatrix();
 		
 		bmenu.render();
 		bmenu_mat.render();
@@ -310,6 +330,11 @@ public class VB extends Engine {
 						goods[4] -= Building.cost[sb][4];
 					}
 				}
+				if (!rmtool && !shiftdown && sb == 0) {
+					for (Building b : buildings) {
+						if (b.occupies(mousex, mousez)) b.onMouseClick();
+					}
+				}
 			}
 		} else lmup = true;
 		
@@ -322,8 +347,8 @@ public class VB extends Engine {
 			if (goods[i] > goodlimit) goods[i] = goodlimit;
 			if (goods[i] < 0) goods[i] = 0;
 		}
-		if (goods[5] == 0) happiness -= 0.008f;
-		else happiness += 0.002f;
+		if (goods[5] == 0) dhappiness -= 0.008f;
+		else dhappiness += 0.002f;
 	}
 	
 	@Override
@@ -466,7 +491,7 @@ public class VB extends Engine {
 		goods[2] = 0;
 		goods[3] = 0;
 		goods[4] = 0;
-		goods[5] = 250;
+		goods[5] = 2;
 	}
 	private void initTex() {
 		try {
@@ -485,6 +510,10 @@ public class VB extends Engine {
 			tex_bmenu_spc_0 = ResourceLoader.loadTexture("res/img/bmspc_0.png");
 			
 			tex_smiley = ResourceLoader.loadTexture("res/img/ssmiley.png");
+			Building.tex_mconstruction = ResourceLoader.loadTexture("res/img/mconstruction.png");
+			Building.tex_mgear = ResourceLoader.loadTexture("res/img/mgear.png");
+			Building.tex_mpeople = tex_bmenu_liv;
+			BStorage.tex_mcrate = tex_bmenu_spc_0;
 		} catch (IOException e) {
 			System.err.println("While loading textures:");
 			e.printStackTrace();
@@ -726,13 +755,14 @@ public class VB extends Engine {
 			if (fc.showSaveDialog(null) != JFileChooser.APPROVE_OPTION) return;
 			target = new BufferedWriter(new FileWriter(fc.getSelectedFile()));
 			
+			target.write("s h " + happiness);
+			target.newLine();
 			for (int i = 0; i < goods.length; i++) {
 				target.write("g " + i + " " + goods[i]);
 				target.newLine();
 			}
-			
 			for (Building b : buildings) {
-				target.write("b " + b.getID() + " " + b.getX() + " " + b.getZ() + " " + b.getBR());
+				target.write("b " + b.getID() + " " + b.getX() + " " + b.getZ() + " " + b.getBR() + " " + b.getExtra());
 				target.newLine();
 			}
 			JOptionPane.showMessageDialog(null, "Succesfully saved the game", "Success", JOptionPane.INFORMATION_MESSAGE);
@@ -767,7 +797,17 @@ public class VB extends Engine {
 					newgoods[Integer.parseInt(args[1])] = Float.parseFloat(args[2]);
 					break;
 				case "b":
-					newbuildings.add(Building.get(Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4])));
+					newbuildings.add(Building.get(Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4]), args[5]));
+					break;
+				case "s":
+					switch (args[1]) {
+					case "h":
+						happiness = Float.parseFloat(args[2]);
+						break;
+					default:
+							System.out.println("Invalid line in input file:");
+							System.out.println(in);
+					}
 					break;
 				default:
 					System.out.println("Invalid line in input file:");
