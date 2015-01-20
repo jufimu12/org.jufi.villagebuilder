@@ -37,7 +37,7 @@ public class BLiving extends Building {
 	}
 	
 	@Override
-	protected void render2d() {
+	protected void render2d(boolean click) {
 		glColor3f(1, 1, 1);
 		glBindTexture(GL_TEXTURE_2D, tex_mpeople);
 		glBegin(GL_QUADS);

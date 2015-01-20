@@ -5,9 +5,7 @@ import static org.lwjgl.opengl.GL11.*;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.jufi.lwjglutil.Draw;
-import org.jufi.lwjglutil.Model;
-import org.jufi.lwjglutil.ResourceLoader;
+import org.jufi.lwjglutil.*;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
@@ -29,6 +27,7 @@ public abstract class Building {
 	private static final int[] BUILD_TIME = {1, 1000, 1000, 2000, 4000, 240, 1000, 1000};// TODO on new building
 	public static boolean takestimetobuild = true;// false to instantly build
 	public static int tex_mgear, tex_mpeople, tex_mconstruction;
+	private static Label l_productivity, l_workers;
 	protected int btimeleft;
 	private boolean inactive2d = true, lmup;
 	protected boolean bfinished;
@@ -63,10 +62,10 @@ public abstract class Building {
 			return;
 		}
 		if (Mouse.isButtonDown(0)) {
-			if (lmup) {
+			if (lmup && (Mouse.getX() < 1000 || Mouse.getY() > 300)) {
 				inactive2d = true;
 			}
-		} else lmup = true;
+		}
 		
 		glColor3f(VB.BGC, VB.BGC, VB.BGC);
 		glBegin(GL_QUADS);
@@ -75,7 +74,7 @@ public abstract class Building {
 			glVertex2f(600, 300);
 			glVertex2f(0, 300);
 		glEnd();
-		if (bfinished) render2d();
+		if (bfinished) render2d(lmup && Mouse.isButtonDown(0));
 		else {
 			glColor3f(1, 1, 1);
 			glBindTexture(GL_TEXTURE_2D, tex_mconstruction);
@@ -86,6 +85,7 @@ public abstract class Building {
 				glTexCoord2f(0, 0); glVertex2f(236, 214);
 			glEnd();
 		}
+		lmup = !Mouse.isButtonDown(0);
 	}
 	
 	
@@ -181,25 +181,8 @@ public abstract class Building {
 	}
 	
 	protected void renderProductionUI() {
-		glColor3f(1, 1, 1);
-		glBindTexture(GL_TEXTURE_2D, tex_mgear);
-		glBegin(GL_QUADS);
-			glTexCoord2f(0, 1); glVertex2f(8, 276);
-			glTexCoord2f(1, 1); glVertex2f(24, 276);
-			glTexCoord2f(1, 0); glVertex2f(24, 292);
-			glTexCoord2f(0, 0); glVertex2f(8, 292);
-		glEnd();
-		glBindTexture(GL_TEXTURE_2D, tex_mpeople);
-		glBegin(GL_QUADS);
-			glTexCoord2f(0, 1); glVertex2f(8, 245);
-			glTexCoord2f(1, 1); glVertex2f(24, 245);
-			glTexCoord2f(1, 0); glVertex2f(24, 260);
-			glTexCoord2f(0, 0); glVertex2f(8, 260);
-		glEnd();
-		
-		glBindTexture(GL_TEXTURE_2D, ResourceLoader.white);
-		Draw.drawString((int) (VB.vb.workersq * 100f), 32, 281, 1, 1, 1);
-		Draw.drawString(cost[getID()][5] + " / " + (int) (cost[getID()][5] * VB.vb.workersq), 32, 249, 1, 1, 1);
+		l_productivity.render(String.valueOf((int) (VB.vb.workersq * 100f)));
+		l_workers.render(cost[getID()][5] + " / " + (int) (cost[getID()][5] * VB.vb.workersq));
 	}
 	
 	public final int getX() {
@@ -213,7 +196,7 @@ public abstract class Building {
 	}
 	
 	protected abstract boolean tick();
-	protected abstract void render2d();
+	protected abstract void render2d(boolean click);
 	public abstract int getID();
 	public abstract String getExtra();
 	
@@ -236,6 +219,9 @@ public abstract class Building {
 		cost[5] = new int[] {0, 0, 0, 0, 0, 0};
 		cost[6] = new int[] {50, 10, 0, 0, 0, 4};
 		cost[7] = new int[] {20, 10, 0, 0, 0, 1};
+		
+		l_productivity = new Label(tex_mgear, 8, 276, 1, 1, 1);
+		l_workers = new Label(tex_mpeople, 8, 245, 1, 1, 1);
 	}
 	public static Building get(int id, int x, int z, int br) {// TODO on new building
 		switch (id) {

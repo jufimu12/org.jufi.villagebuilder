@@ -1,6 +1,7 @@
 package org.jufi.villagebuilder;
 
 public class BCityHall extends Building {
+	Button b = new Button(5, 8, 260, 1000, 0);
 	
 	public BCityHall(int x, int z, int br) {
 		super(x, z, br);
@@ -25,7 +26,8 @@ public class BCityHall extends Building {
 	}
 	
 	@Override
-	protected void render2d() {
-		
+	protected void render2d(boolean click) {
+		b.render();
+		if (click && b.mouseover()) System.out.println("a");
 	}
 }

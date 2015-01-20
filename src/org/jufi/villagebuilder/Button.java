@@ -5,7 +5,7 @@ import static org.lwjgl.opengl.GL11.*;
 import org.lwjgl.input.Mouse;
 
 public class Button {
-	private int x, y, tx, ty, tex_icon;
+	private int tex_icon, x, y, tx, ty;
 	
 	public Button(int tex_icon, int x, int y) {
 		this.tex_icon = tex_icon;

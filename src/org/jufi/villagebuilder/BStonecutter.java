@@ -27,7 +27,7 @@ public class BStonecutter extends Building {
 	}
 	
 	@Override
-	protected void render2d() {
+	protected void render2d(boolean click) {
 		renderProductionUI();
 	}
 }

@@ -26,7 +26,7 @@ public class BAppleFarm extends Building {
 	}
 	
 	@Override
-	protected void render2d() {
+	protected void render2d(boolean click) {
 		renderProductionUI();
 	}
 }
