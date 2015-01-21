@@ -212,7 +212,7 @@ public class VB extends Engine {
 			}
 			movex += 64;
 		}
-		Draw.drawString((int) workersc + " / " + (int) workersp + " / " + (int) workersm + " / " + (int) (workersq * 100f), 457, 835, 1, 1, 1);
+		Draw.drawString("&$c100100000" + (int) workersc + "&$c100100100 / &$c000100000" + (int) workersp + "&$c100100100 / &$c100000000" + (int) workersm + "&$c100100100 / " + (int) (workersq * 100f), 457, 835, 1, 1, 1);
 		if (sb > 0) Draw.drawString(Building.cost[sb][5], 457, 810, 1, 1, 1);
 		Draw.drawString(Math.floor(goodlimit / 100f) / 10f + "k", 649, 835, 1, 1, 1);
 		float hr = 1, hg = 1;
@@ -486,12 +486,12 @@ public class VB extends Engine {
 		mousez = (int) Math.floor(cam.getTy() / -ray.y * ray.z + cam.getTz());// y = 0
 	}
 	private void initGoods() {
-		goods[0] = 250;
-		goods[1] = 150;
+		goods[0] = 200;
+		goods[1] = 50;
 		goods[2] = 0;
 		goods[3] = 0;
 		goods[4] = 0;
-		goods[5] = 2;
+		goods[5] = 200;
 	}
 	private void initTex() {
 		try {
