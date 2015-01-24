@@ -19,13 +19,13 @@ int[] sizeX, sizeY, sizeZ, BUILD_TIME, dls, cost
 */
 
 public abstract class Building {
-	public static int[] dls = new int[8];// TODO on new building
-	public static final int[] sizeX =   {0, 4, 4, 4, 4, 6, 9,    4};// TODO on new building
-	public static final float[] sizeY = {0, 3, 3, 3, 6, 6, 4, 4.5f};// TODO on new building
-	public static final int[] sizeZ =   {0, 3, 4, 5, 6, 6, 8,    5};// TODO on new building
-	public static final int[][] cost = new int[8][];// TODO on new building
-	private static final int[] BUILD_TIME = {1, 1000, 1000, 2000, 4000, 240, 1000, 1000};// TODO on new building
-	public static boolean takestimetobuild = true;// false to instantly build
+	public static int[] dls = new int[9];// TODO on new building
+	public static final int[] sizeX =   {0, 4, 4, 4, 4, 6, 9,    4,     5};// TODO on new building
+	public static final float[] sizeY = {0, 3, 3, 3, 6, 6, 4, 4.5f, 4.52f};// TODO on new building
+	public static final int[] sizeZ =   {0, 3, 4, 5, 6, 6, 8,    5,     5};// TODO on new building
+	public static final int[][] cost = new int[9][];// TODO on new building
+	private static final int[] BUILD_TIME = {1, 1000, 1000, 2000, 4000, 240, 4000, 1000, 4000};// TODO on new building
+	public static boolean takestimetobuild = false;// false to instantly build
 	public static int tex_mgear, tex_mpeople, tex_mconstruction;
 	private static Label l_productivity, l_workers;
 	protected int btimeleft;
@@ -209,6 +209,7 @@ public abstract class Building {
 		dls[5] = Model.getDL("res/obj/BCityHall.obj");
 		dls[6] = Model.getDL("res/obj/BAppleFarm.obj");
 		dls[7] = Model.getDL("res/obj/BStorage.obj");
+		dls[8] = Model.getDL("res/obj/BSchool.obj");
 		
 		// {wood, stone, brick, steel, glass}
 		cost[0] = new int[5];
@@ -219,6 +220,7 @@ public abstract class Building {
 		cost[5] = new int[] {0, 0, 0, 0, 0, 0};
 		cost[6] = new int[] {50, 10, 0, 0, 0, 4};
 		cost[7] = new int[] {20, 10, 0, 0, 0, 1};
+		cost[8] = new int[] {50, 100, 0, 0, 0, 0};
 		
 		l_productivity = new Label(tex_mgear, 8, 276, 1, 1, 1);
 		l_workers = new Label(tex_mpeople, 8, 245, 1, 1, 1);
@@ -232,6 +234,7 @@ public abstract class Building {
 		case 5: return new BCityHall(x, z, br);
 		case 6: return new BAppleFarm(x, z, br);
 		case 7: return new BStorage(x, z, br);
+		case 8: return new BSchool(x, z, br);
 		default: return null;
 		}
 	}
@@ -244,6 +247,7 @@ public abstract class Building {
 		case 5: return new BCityHall(x, z, br, extra);
 		case 6: return new BAppleFarm(x, z, br, extra);
 		case 7: return new BStorage(x, z, br, extra);
+		case 8: return new BSchool(x, z, br, extra);
 		default: return null;
 		}
 	}

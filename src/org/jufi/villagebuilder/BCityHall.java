@@ -2,6 +2,8 @@ package org.jufi.villagebuilder;
 
 public class BCityHall extends Building {
 	public static int tex_m0, tex_m50, tex_m100, tex_m150, tex_m200;
+	public static boolean foodsettings;
+	
 	Button food_0 = new Button(tex_m0, 8, 260, 1000, 0);
 	Button food_50 = new Button(tex_m50, 48, 260, 1000, 0);
 	Button food_100 = new Button(tex_m100, 88, 260, 1000, 0);
@@ -32,15 +34,17 @@ public class BCityHall extends Building {
 	
 	@Override
 	protected void render2d(boolean click) {
-		food_0.render();
-		food_50.render();
-		food_100.render();
-		food_150.render();
-		food_200.render();
-		if (click && food_0.mouseover()) VB.vb.foodrate = 0f;
-		if (click && food_50.mouseover()) VB.vb.foodrate = 0.00005f;
-		if (click && food_100.mouseover()) VB.vb.foodrate = 0.0001f;
-		if (click && food_150.mouseover()) VB.vb.foodrate = 0.00015f;
-		if (click && food_200.mouseover()) VB.vb.foodrate = 0.0002f;
+		if (foodsettings) {
+			food_0.render();
+			food_50.render();
+			food_100.render();
+			food_150.render();
+			food_200.render();
+			if (click && food_0.mouseover()) VB.vb.foodrate = 0f;
+			if (click && food_50.mouseover()) VB.vb.foodrate = 0.00005f;
+			if (click && food_100.mouseover()) VB.vb.foodrate = 0.0001f;
+			if (click && food_150.mouseover()) VB.vb.foodrate = 0.00015f;
+			if (click && food_200.mouseover()) VB.vb.foodrate = 0.0002f;
+		}
 	}
 }

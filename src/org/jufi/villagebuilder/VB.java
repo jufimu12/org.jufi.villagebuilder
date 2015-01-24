@@ -1,4 +1,4 @@
-package org.jufi.villagebuilder;// TODO cityhall control interface -> food
+package org.jufi.villagebuilder;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -51,13 +51,14 @@ public class VB extends Engine {
 	public float[] goods = new float[6];
 	private int[] tex_goods = new int[6];
 	private int tex_bmenu_mat, tex_bmenu_liv, tex_bmenu_spc;
-	private int tex_bmenu_liv_0, tex_bmenu_fod_0, tex_bmenu_spc_0;
+	private int tex_bmenu_liv_0, tex_bmenu_fod_0, tex_bmenu_spc_0, tex_bmenu_spc_1;
 	private int tex_smiley;
 	private int goodlimit = 1000;
 	public int goodlimittick = 1000;
 	private DiscMenu bmenu, bmenu_mat, bmenu_liv, bmenu_fod, bmenu_spc;
 	public float workersp, workersm, workersq, workersc;
 	public float happiness = 50, dhappiness, foodrate = 0.0001f;
+	public Runnable[][] tech = new Runnable[2][];
 	
 	
 	@Override// FUNCTIONS
@@ -208,7 +209,6 @@ public class VB extends Engine {
 			if (i < 5 && sb > 0) {
 				if (Building.cost[sb][i] <= goods[i]) Draw.drawString(Building.cost[sb][i], movex, 835, 0, 1, 0);
 				else Draw.drawString(Building.cost[sb][i], movex, 835, 1, 0, 0);
-				
 			}
 			movex += 64;
 		}
@@ -350,7 +350,7 @@ public class VB extends Engine {
 			if (goods[i] < 0) goods[i] = 0;
 		}
 		if (goods[5] == 0) dhappiness -= 0.008f;
-		else dhappiness += foodrate * 100f - 0.008f;
+		else dhappiness += foodrate * 100f - 0.00833333f;
 	}
 	
 	@Override
@@ -359,7 +359,7 @@ public class VB extends Engine {
 	}
 	@Override
 	protected void postInit() {
-		System.out.println("Loading Resources");
+		System.out.println("Loading resources");
 		try {// shader
 			sh_main = new int[3];
 			sh_main[0] = ResourceLoader.loadShader("res/shader/3d.vsh", "res/shader/3d.fsh")[0];
@@ -374,11 +374,12 @@ public class VB extends Engine {
 		initTex();
 		initDisplayLists();
 		initDiscMenus();
+		initTech();
 		
 		glClearColor(0.53f, 0.81f, 0.92f, 1f);
 		Mouse.getDWheel();
 		buildings.add(Building.get(5, MAP_SIZE / 2, MAP_SIZE / 2, 0));
-		System.out.println("Done");
+		System.out.println("Done loading");
 	}
 	
 	@Override
@@ -489,7 +490,7 @@ public class VB extends Engine {
 	}
 	private void initGoods() {
 		goods[0] = 200;
-		goods[1] = 50;
+		goods[1] = 200;
 		goods[2] = 0;
 		goods[3] = 0;
 		goods[4] = 0;
@@ -510,6 +511,7 @@ public class VB extends Engine {
 			tex_bmenu_liv_0 = ResourceLoader.loadTexture("res/img/bmliv_0.png");
 			tex_bmenu_fod_0 = ResourceLoader.loadTexture("res/img/bmfod_0.png");
 			tex_bmenu_spc_0 = ResourceLoader.loadTexture("res/img/bmspc_0.png");
+			tex_bmenu_spc_1 = ResourceLoader.loadTexture("res/img/bmspc_1.png");
 			
 			tex_smiley = ResourceLoader.loadTexture("res/img/ssmiley.png");
 			Building.tex_mconstruction = ResourceLoader.loadTexture("res/img/mconstruction.png");
@@ -521,6 +523,8 @@ public class VB extends Engine {
 			BCityHall.tex_m150 = ResourceLoader.loadTexture("res/img/m150.png");
 			BCityHall.tex_m200 = ResourceLoader.loadTexture("res/img/m200.png");
 			BStorage.tex_mcrate = tex_bmenu_spc_0;
+			BSchool.tex_locked[0] = tex_goods[2];
+			BSchool.tex_locked[1] = ResourceLoader.loadTexture("res/img/tfoodrate.png");;
 		} catch (IOException e) {
 			System.err.println("While loading textures:");
 			e.printStackTrace();
@@ -641,16 +645,6 @@ public class VB extends Engine {
 				sb = 3;
 			}
 		});
-		bmenu_mat.addItem(new DiscMenuItem() {
-			@Override
-			public void render() {
-				renderDynDiscMenuIconWithTexture(tex_goods[2], 4);
-			}
-			@Override
-			public void run() {
-				sb = 4;
-			}
-		});
 		
 		bmenu_liv = new DiscMenu();
 		bmenu_liv.addItem(new DiscMenuItem() {
@@ -685,6 +679,16 @@ public class VB extends Engine {
 			@Override
 			public void run() {
 				sb = 7;
+			}
+		});
+		bmenu_spc.addItem(new DiscMenuItem() {
+			@Override
+			public void render() {
+				renderDynDiscMenuIconWithTexture(tex_bmenu_spc_1, 8);
+			}
+			@Override
+			public void run() {
+				sb = 8;
 			}
 		});
 		
@@ -754,6 +758,30 @@ public class VB extends Engine {
 			glTexCoord2f(1, 0); glVertex2f(32, 32);
 			glTexCoord2f(0, 0); glVertex2f(-32, 32);
 		glEnd();
+	}
+	private void initTech() {
+		tech[0] = new Runnable[2];
+		tech[0][0] = new Runnable() {
+			@Override
+			public void run() {
+				bmenu_mat.addItem(new DiscMenuItem() {
+					@Override
+					public void render() {
+						renderDynDiscMenuIconWithTexture(tex_goods[2], 4);
+					}
+					@Override
+					public void run() {
+						sb = 4;
+					}
+				});
+			}
+		};
+		tech[0][1] = new Runnable() {
+			@Override
+			public void run() {
+				BCityHall.foodsettings = true;
+			}
+		};
 	}
 	private void save() {
 		BufferedWriter target = null;

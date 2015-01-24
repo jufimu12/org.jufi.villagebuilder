@@ -14,8 +14,8 @@ buildings:
 	5 CityHall
 	6 AppleFarm
 	7 Storage
+	8 School
 save:
 	"b" id x z br <String>extra (Building)
 	"g" id amt (Good)
 	"s" "h" val (Happiness)
-	
