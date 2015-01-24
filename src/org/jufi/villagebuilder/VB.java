@@ -57,7 +57,7 @@ public class VB extends Engine {
 	public int goodlimittick = 1000;
 	private DiscMenu bmenu, bmenu_mat, bmenu_liv, bmenu_fod, bmenu_spc;
 	public float workersp, workersm, workersq, workersc;
-	public float happiness = 100, dhappiness;
+	public float happiness = 50, dhappiness, foodrate = 0.0001f;
 	
 	
 	@Override// FUNCTIONS
@@ -218,7 +218,9 @@ public class VB extends Engine {
 		float hr = 1, hg = 1;
 		if (happiness >= 0) hr -= happiness / 100f;
 		else hg += happiness / 100f;
-		Draw.drawString((int) happiness + " / " + Math.floor(dhappiness * 6000f) / 100f, 713, 835, hr, hg, 0);
+		if (dhappiness > 0) Draw.drawString((int) happiness + "&$c100100100 / &$c000100000" + Math.floor(dhappiness * 6000f) / 100f, 713, 835, hr, hg, 0);
+		else if (dhappiness < 0) Draw.drawString((int) happiness + "&$c100100100 / &$c100000000" + Math.floor(dhappiness * 6000f) / 100f, 713, 835, hr, hg, 0);
+		else Draw.drawString((int) happiness + "&$c100100100 / " + Math.floor(dhappiness * 6000f) / 100f, 713, 835, hr, hg, 0);
 		happiness += dhappiness;
 		dhappiness = 0;
 		
@@ -348,7 +350,7 @@ public class VB extends Engine {
 			if (goods[i] < 0) goods[i] = 0;
 		}
 		if (goods[5] == 0) dhappiness -= 0.008f;
-		else dhappiness += 0.002f;
+		else dhappiness += foodrate * 100f - 0.008f;
 	}
 	
 	@Override
@@ -513,6 +515,11 @@ public class VB extends Engine {
 			Building.tex_mconstruction = ResourceLoader.loadTexture("res/img/mconstruction.png");
 			Building.tex_mgear = ResourceLoader.loadTexture("res/img/mgear.png");
 			Building.tex_mpeople = tex_bmenu_liv;
+			BCityHall.tex_m0 = ResourceLoader.loadTexture("res/img/m0.png");
+			BCityHall.tex_m50 = ResourceLoader.loadTexture("res/img/m50.png");
+			BCityHall.tex_m100 = ResourceLoader.loadTexture("res/img/m100.png");
+			BCityHall.tex_m150 = ResourceLoader.loadTexture("res/img/m150.png");
+			BCityHall.tex_m200 = ResourceLoader.loadTexture("res/img/m200.png");
 			BStorage.tex_mcrate = tex_bmenu_spc_0;
 		} catch (IOException e) {
 			System.err.println("While loading textures:");

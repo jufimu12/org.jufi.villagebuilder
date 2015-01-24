@@ -19,7 +19,7 @@ public class BLiving extends Building {
 	protected boolean tick() {
 		VB.vb.workersc += 10;
 		VB.vb.workersp += (int) people;
-		VB.vb.goods[5] -= Math.floor(people) * 0.0001f;
+		VB.vb.goods[5] -= Math.floor(people) * VB.vb.foodrate;
 		people += VB.vb.happiness / 100000f;
 		if (people > 10) people = 10;
 		if (people < 0) people = 0;
