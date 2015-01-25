@@ -48,17 +48,17 @@ public class VB extends Engine {
 	private ArrayList<Building> buildings = new ArrayList<Building>();
 	private int sb, br;
 	public int mousex, mousez;
-	public float[] goods = new float[6];
-	private int[] tex_goods = new int[6];
-	private int tex_bmenu_mat, tex_bmenu_liv, tex_bmenu_spc;
-	private int tex_bmenu_liv_0, tex_bmenu_fod_0, tex_bmenu_spc_0, tex_bmenu_spc_1;
+	public float[] goods = new float[8];
+	private int[] tex_goods = new int[8];
+	private int tex_bmmat, tex_bmliv, tex_bmspc;
+	private int tex_bmliv_0, tex_bmfod_0, tex_bmspc_0, tex_bmspc_1, tex_bmfod_3;
 	private int tex_smiley;
 	private int goodlimit = 1000;
 	public int goodlimittick = 1000;
 	private DiscMenu bmenu, bmenu_mat, bmenu_liv, bmenu_fod, bmenu_spc;
 	public float workersp, workersm, workersq, workersc;
 	public float happiness = 50, dhappiness, foodrate = 0.0001f;
-	public Runnable[][] tech = new Runnable[2][];
+	public Runnable[][] tech = new Runnable[1][];
 	
 	
 	@Override// FUNCTIONS
@@ -491,40 +491,46 @@ public class VB extends Engine {
 	private void initGoods() {
 		goods[0] = 200;
 		goods[1] = 200;
-		goods[2] = 0;
+		goods[2] = 100;
 		goods[3] = 0;
 		goods[4] = 0;
 		goods[5] = 200;
+		goods[6] = 0;
+		goods[7] = 0;
 	}
 	private void initTex() {
 		try {
-			tex_goods[0] = ResourceLoader.loadTexture("res/img/glogs.png");
-			tex_goods[1] = ResourceLoader.loadTexture("res/img/gstone.png");
-			tex_goods[2] = ResourceLoader.loadTexture("res/img/gbrick.png");
+			tex_goods[0] = ResourceLoader.loadTexture("res/img/bmat0.png");
+			tex_goods[1] = ResourceLoader.loadTexture("res/img/bmat1.png");
+			tex_goods[2] = ResourceLoader.loadTexture("res/img/bmat2.png");
 			tex_goods[3] = ResourceLoader.loadTexture("res/img/gsteel.png");
 			tex_goods[4] = ResourceLoader.loadTexture("res/img/gglass.png");
-			tex_goods[5] = ResourceLoader.loadTexture("res/img/gfood.png");
+			tex_goods[5] = ResourceLoader.loadTexture("res/img/bfod.png");
+			tex_goods[6] = ResourceLoader.loadTexture("res/img/bfod1.png");
+			tex_goods[7] = ResourceLoader.loadTexture("res/img/bfod2.png");
 			
-			tex_bmenu_mat = ResourceLoader.loadTexture("res/img/bmmat.png");
-			tex_bmenu_liv = ResourceLoader.loadTexture("res/img/bmliv.png");
-			tex_bmenu_spc = ResourceLoader.loadTexture("res/img/bmspc.png");
-			tex_bmenu_liv_0 = ResourceLoader.loadTexture("res/img/bmliv_0.png");
-			tex_bmenu_fod_0 = ResourceLoader.loadTexture("res/img/bmfod_0.png");
-			tex_bmenu_spc_0 = ResourceLoader.loadTexture("res/img/bmspc_0.png");
-			tex_bmenu_spc_1 = ResourceLoader.loadTexture("res/img/bmspc_1.png");
+			tex_bmmat = ResourceLoader.loadTexture("res/img/bmat.png");
+			tex_bmliv = ResourceLoader.loadTexture("res/img/bliv.png");
+			tex_bmspc = ResourceLoader.loadTexture("res/img/bspc.png");
+			tex_bmliv_0 = ResourceLoader.loadTexture("res/img/bliv0.png");
+			tex_bmfod_0 = ResourceLoader.loadTexture("res/img/bfod0.png");
+			tex_bmfod_3 = ResourceLoader.loadTexture("res/img/bfod3.png");
+			tex_bmspc_0 = ResourceLoader.loadTexture("res/img/bspc0.png");
+			tex_bmspc_1 = ResourceLoader.loadTexture("res/img/bspc1.png");
 			
 			tex_smiley = ResourceLoader.loadTexture("res/img/ssmiley.png");
 			Building.tex_mconstruction = ResourceLoader.loadTexture("res/img/mconstruction.png");
 			Building.tex_mgear = ResourceLoader.loadTexture("res/img/mgear.png");
-			Building.tex_mpeople = tex_bmenu_liv;
+			Building.tex_mpeople = tex_bmliv;
 			BCityHall.tex_m0 = ResourceLoader.loadTexture("res/img/m0.png");
 			BCityHall.tex_m50 = ResourceLoader.loadTexture("res/img/m50.png");
 			BCityHall.tex_m100 = ResourceLoader.loadTexture("res/img/m100.png");
 			BCityHall.tex_m150 = ResourceLoader.loadTexture("res/img/m150.png");
 			BCityHall.tex_m200 = ResourceLoader.loadTexture("res/img/m200.png");
-			BStorage.tex_mcrate = tex_bmenu_spc_0;
+			BStorage.tex_mcrate = tex_bmspc_0;
 			BSchool.tex_locked[0] = tex_goods[2];
-			BSchool.tex_locked[1] = ResourceLoader.loadTexture("res/img/tfoodrate.png");;
+			BSchool.tex_locked[1] = ResourceLoader.loadTexture("res/img/tfoodrate.png");
+			BSchool.tex_locked[2] = tex_bmfod_3;
 		} catch (IOException e) {
 			System.err.println("While loading textures:");
 			e.printStackTrace();
@@ -593,14 +599,14 @@ public class VB extends Engine {
 				glEnd();
 				movex += 64;
 			}
-			glBindTexture(GL_TEXTURE_2D, tex_bmenu_liv_0);
+			glBindTexture(GL_TEXTURE_2D, tex_bmliv_0);
 			glBegin(GL_QUADS);
 				glTexCoord2f(0, 1); glVertex2f(433, 831);
 				glTexCoord2f(1, 1); glVertex2f(449, 831);
 				glTexCoord2f(1, 0); glVertex2f(449, 847);
 				glTexCoord2f(0, 0); glVertex2f(433, 847);
 			glEnd();
-			glBindTexture(GL_TEXTURE_2D, tex_bmenu_spc_0);
+			glBindTexture(GL_TEXTURE_2D, tex_bmspc_0);
 			glBegin(GL_QUADS);
 				glTexCoord2f(0, 1); glVertex2f(625, 831);
 				glTexCoord2f(1, 1); glVertex2f(641, 831);
@@ -650,7 +656,7 @@ public class VB extends Engine {
 		bmenu_liv.addItem(new DiscMenuItem() {
 			@Override
 			public void render() {
-				renderDynDiscMenuIconWithTexture(tex_bmenu_liv_0, 1);
+				renderDynDiscMenuIconWithTexture(tex_bmliv_0, 1);
 			}
 			@Override
 			public void run() {
@@ -662,7 +668,7 @@ public class VB extends Engine {
 		bmenu_fod.addItem(new DiscMenuItem() {
 			@Override
 			public void render() {
-				renderDynDiscMenuIconWithTexture(tex_bmenu_fod_0, 6);
+				renderDynDiscMenuIconWithTexture(tex_bmfod_0, 6);
 			}
 			@Override
 			public void run() {
@@ -674,7 +680,7 @@ public class VB extends Engine {
 		bmenu_spc.addItem(new DiscMenuItem() {
 			@Override
 			public void render() {
-				renderDynDiscMenuIconWithTexture(tex_bmenu_spc_0, 7);
+				renderDynDiscMenuIconWithTexture(tex_bmspc_0, 7);
 			}
 			@Override
 			public void run() {
@@ -684,7 +690,7 @@ public class VB extends Engine {
 		bmenu_spc.addItem(new DiscMenuItem() {
 			@Override
 			public void render() {
-				renderDynDiscMenuIconWithTexture(tex_bmenu_spc_1, 8);
+				renderDynDiscMenuIconWithTexture(tex_bmspc_1, 8);
 			}
 			@Override
 			public void run() {
@@ -696,7 +702,7 @@ public class VB extends Engine {
 		bmenu.addItem(new DiscMenuItem() {
 			@Override
 			public void render() {
-				renderDiscMenuIconWithTexture(tex_bmenu_mat);
+				renderDiscMenuIconWithTexture(tex_bmmat);
 			}
 			@Override
 			public void run() {
@@ -706,7 +712,7 @@ public class VB extends Engine {
 		bmenu.addItem(new DiscMenuItem() {
 			@Override
 			public void render() {
-				renderDiscMenuIconWithTexture(tex_bmenu_liv);
+				renderDiscMenuIconWithTexture(tex_bmliv);
 			}
 			@Override
 			public void run() {
@@ -726,7 +732,7 @@ public class VB extends Engine {
 		bmenu.addItem(new DiscMenuItem() {
 			@Override
 			public void render() {
-				renderDiscMenuIconWithTexture(tex_bmenu_spc);
+				renderDiscMenuIconWithTexture(tex_bmspc);
 			}
 			@Override
 			public void run() {
@@ -760,7 +766,7 @@ public class VB extends Engine {
 		glEnd();
 	}
 	private void initTech() {
-		tech[0] = new Runnable[2];
+		tech[0] = new Runnable[3];
 		tech[0][0] = new Runnable() {
 			@Override
 			public void run() {
@@ -780,6 +786,41 @@ public class VB extends Engine {
 			@Override
 			public void run() {
 				BCityHall.foodsettings = true;
+			}
+		};
+		tech[0][2] = new Runnable() {
+			@Override
+			public void run() {
+				bmenu_fod.addItem(new DiscMenuItem() {
+					@Override
+					public void render() {
+						renderDynDiscMenuIconWithTexture(tex_goods[6], 9);
+					}
+					@Override
+					public void run() {
+						sb = 9;
+					}
+				});
+				bmenu_fod.addItem(new DiscMenuItem() {
+					@Override
+					public void render() {
+						renderDynDiscMenuIconWithTexture(tex_goods[7], 10);
+					}
+					@Override
+					public void run() {
+						sb = 10;
+					}
+				});
+				bmenu_fod.addItem(new DiscMenuItem() {
+					@Override
+					public void render() {
+						renderDynDiscMenuIconWithTexture(tex_bmfod_3, 11);
+					}
+					@Override
+					public void run() {
+						sb = 11;
+					}
+				});
 			}
 		};
 	}

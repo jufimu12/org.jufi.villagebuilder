@@ -19,12 +19,12 @@ int[] sizeX, sizeY, sizeZ, BUILD_TIME, dls, cost
 */
 
 public abstract class Building {
-	public static int[] dls = new int[9];// TODO on new building
-	public static final int[] sizeX =   {0, 4, 4, 4, 4, 6, 9,    4,     5};// TODO on new building
-	public static final float[] sizeY = {0, 3, 3, 3, 6, 6, 4, 4.5f, 4.52f};// TODO on new building
-	public static final int[] sizeZ =   {0, 3, 4, 5, 6, 6, 8,    5,     5};// TODO on new building
-	public static final int[][] cost = new int[9][];// TODO on new building
-	private static final int[] BUILD_TIME = {1, 1000, 1000, 2000, 4000, 240, 4000, 1000, 4000};// TODO on new building
+	public static int[] dls = new int[12];// TODO on new building
+	public static final int[] sizeX =   {0, 4, 4, 4, 4, 6, 9,    4,     5,     7,     6, 4};// TODO on new building
+	public static final float[] sizeY = {0, 3, 3, 3, 6, 6, 4, 4.5f, 4.52f, 2,54f, 8.55f, 4};// TODO on new building
+	public static final int[] sizeZ =   {0, 3, 4, 5, 6, 6, 8,    5,     5,     7,     7, 4};// TODO on new building
+	public static final int[][] cost = new int[12][];// TODO on new building
+	private static final int[] BUILD_TIME = {1, 1000, 1000, 2000, 4000, 240, 4000, 1000, 4000, 2000, 4000, 3000};// TODO on new building
 	public static boolean takestimetobuild = false;// false to instantly build
 	public static int tex_mgear, tex_mpeople, tex_mconstruction;
 	private static Label l_productivity, l_workers;
@@ -201,26 +201,32 @@ public abstract class Building {
 	public abstract String getExtra();
 	
 	public static void initStatic() throws IOException {// TODO on new building x2
-		dls[0] = 0;
-		dls[1] = Model.getDL("res/obj/BLiving.obj");
-		dls[2] = Model.getDL("res/obj/BForester.obj");
-		dls[3] = Model.getDL("res/obj/BQuarry.obj");
-		dls[4] = Model.getDL("res/obj/BStonecutter.obj");
-		dls[5] = Model.getDL("res/obj/BCityHall.obj");
-		dls[6] = Model.getDL("res/obj/BAppleFarm.obj");
-		dls[7] = Model.getDL("res/obj/BStorage.obj");
-		dls[8] = Model.getDL("res/obj/BSchool.obj");
+		dls[0]  = 0;
+		dls[1]  = Model.getDL("res/obj/BLiving.obj");
+		dls[2]  = Model.getDL("res/obj/BForester.obj");
+		dls[3]  = Model.getDL("res/obj/BQuarry.obj");
+		dls[4]  = Model.getDL("res/obj/BStonecutter.obj");
+		dls[5]  = Model.getDL("res/obj/BCityHall.obj");
+		dls[6]  = Model.getDL("res/obj/BAppleFarm.obj");
+		dls[7]  = Model.getDL("res/obj/BStorage.obj");
+		dls[8]  = Model.getDL("res/obj/BSchool.obj");
+		dls[9]  = Model.getDL("res/obj/BFarmWheat.obj");
+		dls[10] = Model.getDL("res/obj/BMill.obj");
+		dls[11] = Model.getDL("res/obj/BBakery.obj");
 		
 		// {wood, stone, brick, steel, glass}
-		cost[0] = new int[5];
-		cost[1] = new int[] {30, 10, 0, 0, 0, 0};
-		cost[2] = new int[] {50, 10, 0, 0, 0, 4};
-		cost[3] = new int[] {80, 0, 0, 0, 0, 6};
-		cost[4] = new int[] {20, 50, 0, 0, 0, 6};
-		cost[5] = new int[] {0, 0, 0, 0, 0, 0};
-		cost[6] = new int[] {50, 10, 0, 0, 0, 4};
-		cost[7] = new int[] {20, 10, 0, 0, 0, 1};
-		cost[8] = new int[] {50, 100, 0, 0, 0, 0};
+		cost[0]  = new int[5];
+		cost[1]  = new int[] {30, 10, 0, 0, 0, 0};
+		cost[2]  = new int[] {50, 10, 0, 0, 0, 4};
+		cost[3]  = new int[] {80, 0, 0, 0, 0, 6};
+		cost[4]  = new int[] {20, 50, 0, 0, 0, 6};
+		cost[5]  = new int[] {0, 0, 0, 0, 0, 0};
+		cost[6]  = new int[] {50, 10, 0, 0, 0, 4};
+		cost[7]  = new int[] {20, 10, 0, 0, 0, 1};
+		cost[8]  = new int[] {50, 100, 0, 0, 0, 0};
+		cost[9]  = new int[] {30, 20, 0, 0, 0, 3};
+		cost[10] = new int[] {50, 100, 20, 0, 0, 4};
+		cost[11] = new int[] {30, 20, 10, 0, 0, 3};
 		
 		l_productivity = new Label(tex_mgear, 8, 276, 1, 1, 1);
 		l_workers = new Label(tex_mpeople, 8, 245, 1, 1, 1);
@@ -235,6 +241,9 @@ public abstract class Building {
 		case 6: return new BAppleFarm(x, z, br);
 		case 7: return new BStorage(x, z, br);
 		case 8: return new BSchool(x, z, br);
+		case 9: return new BFarmWheat(x, z, br);
+		case 10: return new BMill(x, z, br);
+		case 11: return new BBakery(x, z, br);
 		default: return null;
 		}
 	}
@@ -248,6 +257,9 @@ public abstract class Building {
 		case 6: return new BAppleFarm(x, z, br, extra);
 		case 7: return new BStorage(x, z, br, extra);
 		case 8: return new BSchool(x, z, br, extra);
+		case 9: return new BFarmWheat(x, z, br, extra);
+		case 10: return new BMill(x, z, br, extra);
+		case 11: return new BBakery(x, z, br, extra);
 		default: return null;
 		}
 	}

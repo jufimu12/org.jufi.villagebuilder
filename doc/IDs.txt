@@ -1,20 +1,25 @@
 goods:
-	0 Logs
-	1 Stone
-	2 Brick
-	3 Steel
-	4 Glass
-	5 Food
+	 0 Logs
+	 1 Stone
+	 2 Brick
+	 3 Steel
+	 4 Glass
+	 5 Food
+	 6 Wheat
+	 7 Flour
 buildings:
-	0 none
-	1 Living house
-	2 Woodcutter
-	3 Quarry
-	4 Stonecutter
-	5 CityHall
-	6 AppleFarm
-	7 Storage
-	8 School
+	 0 none
+	 1 Living house
+	 2 Woodcutter
+	 3 Quarry
+	 4 Stonecutter
+	 5 CityHall
+	 6 AppleFarm
+	 7 Storage
+	 8 School
+	 9 FarmWheat
+	10 Mill
+	11 Bakery
 save:
 	"b" id x z br <String>extra (Building)
 	"g" id amt (Good)

@@ -7,13 +7,14 @@ import org.jufi.lwjglutil.ResourceLoader;
 import org.lwjgl.input.Mouse;
 
 public class BSchool extends Building {
-	private static boolean[] unlocked = new boolean[2];
-	public static int[] tex_locked = new int[2];
-	private static int[][] cost = new int[2][];
+	private static boolean[] unlocked = new boolean[3];
+	public static int[] tex_locked = new int[3];
+	private static int[][] cost = new int[3][];
 	
 	static {
 		cost[0] = new int[] {25, 100, 0, 0, 0};
 		cost[1] = new int[] {100, 50, 0, 0, 0};
+		cost[2] = new int[] {100, 50, 50, 0, 0};
 	}
 	
 	public BSchool(int x, int z, int br) {
@@ -21,6 +22,12 @@ public class BSchool extends Building {
 	}
 	public BSchool(int x, int z, int br, String extra) {
 		super(x, z, br);
+		char[] in = extra.toCharArray();
+		for (int i = 0; i < in.length; i++) {
+			if (in[i] == '1') {
+				unlocked[i] = true;VB.vb.tech[0][i].run();
+			}
+		}
 	}
 	
 	@Override
@@ -65,6 +72,11 @@ public class BSchool extends Building {
 	
 	@Override
 	public String getExtra() {
-		return null;
+		StringBuilder sb = new StringBuilder();
+		for (boolean b : unlocked) {
+			if (b) sb.append('1');
+			else sb.append('0');
+		}
+		return sb.toString();
 	}
 }
