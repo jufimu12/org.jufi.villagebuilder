@@ -19,12 +19,12 @@ int[] sizeX, sizeY, sizeZ, BUILD_TIME, dls, cost
 */
 
 public abstract class Building {
-	public static int[] dls = new int[12];// TODO on new building
-	public static final int[] sizeX =   {0, 4, 4, 4, 4, 6, 9,    4,     5,     7,     6, 4};// TODO on new building
-	public static final float[] sizeY = {0, 3, 3, 3, 6, 6, 4, 4.5f, 4.52f, 2,54f, 8.55f, 4};// TODO on new building
-	public static final int[] sizeZ =   {0, 3, 4, 5, 6, 6, 8,    5,     5,     7,     7, 4};// TODO on new building
-	public static final int[][] cost = new int[12][];// TODO on new building
-	private static final int[] BUILD_TIME = {1, 1000, 1000, 2000, 4000, 240, 4000, 1000, 4000, 2000, 4000, 3000};// TODO on new building
+	public static int[] dls = new int[15];// TODO on new building
+	public static final int[] sizeX =   {0, 4, 4, 4, 4, 6, 9,    4,     5,     7,     6, 4,    9,    9, 4};// TODO on new building
+	public static final float[] sizeY = {0, 3, 3, 3, 6, 6, 4, 4.5f, 4.52f, 2,54f, 8.55f, 4, 1.6f, 1.6f, 3};// TODO on new building
+	public static final int[] sizeZ =   {0, 3, 4, 5, 6, 6, 8,    5,     5,     7,     7, 4,    8,    8, 4};// TODO on new building
+	public static final int[][] cost = new int[15][];// TODO on new building
+	private static final int[] BUILD_TIME = {1, 1000, 1000, 2000, 4000, 240, 4000, 1000, 4000, 2000, 4000, 3000, 1000, 1000, 2000};// TODO on new building
 	public static boolean takestimetobuild = false;// false to instantly build
 	public static int tex_mgear, tex_mpeople, tex_mconstruction;
 	private static Label l_productivity, l_workers;
@@ -213,6 +213,9 @@ public abstract class Building {
 		dls[9]  = Model.getDL("res/obj/BFarmWheat.obj");
 		dls[10] = Model.getDL("res/obj/BMill.obj");
 		dls[11] = Model.getDL("res/obj/BBakery.obj");
+		dls[12] = Model.getDL("res/obj/BFarmSheep.obj");
+		dls[13] = Model.getDL("res/obj/BFarmCow.obj");
+		dls[14] = Model.getDL("res/obj/BTailor.obj");
 		
 		// {wood, stone, brick, steel, glass}
 		cost[0]  = new int[5];
@@ -227,6 +230,9 @@ public abstract class Building {
 		cost[9]  = new int[] {30, 20, 0, 0, 0, 3};
 		cost[10] = new int[] {50, 100, 20, 0, 0, 4};
 		cost[11] = new int[] {30, 20, 10, 0, 0, 3};
+		cost[12] = new int[] {30, 0, 0, 0, 0, 1};
+		cost[13] = new int[] {30, 0, 0, 0, 0, 1};
+		cost[14] = new int[] {50, 30, 20, 0, 0, 4};
 		
 		l_productivity = new Label(tex_mgear, 8, 276, 1, 1, 1);
 		l_workers = new Label(tex_mpeople, 8, 245, 1, 1, 1);
@@ -244,6 +250,9 @@ public abstract class Building {
 		case 9: return new BFarmWheat(x, z, br);
 		case 10: return new BMill(x, z, br);
 		case 11: return new BBakery(x, z, br);
+		case 12: return new BFarmSheep(x, z, br);
+		case 13: return new BFarmCow(x, z, br);
+		case 14: return new BTailor(x, z, br);
 		default: return null;
 		}
 	}
@@ -260,6 +269,9 @@ public abstract class Building {
 		case 9: return new BFarmWheat(x, z, br, extra);
 		case 10: return new BMill(x, z, br, extra);
 		case 11: return new BBakery(x, z, br, extra);
+		case 12: return new BFarmSheep(x, z, br, extra);
+		case 13: return new BFarmCow(x, z, br, extra);
+		case 14: return new BTailor(x, z, br, extra);
 		default: return null;
 		}
 	}
