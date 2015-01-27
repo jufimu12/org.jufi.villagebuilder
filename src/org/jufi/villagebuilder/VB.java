@@ -36,7 +36,7 @@ public class VB extends Engine {
 	
 	public static void main(String[] main) {
 		vb = new VB();
-		vb.start();
+		vb.start();// debugging: initial good amount, instant build
 	}
 	
 	
@@ -49,15 +49,15 @@ public class VB extends Engine {
 	private int sb, br;
 	public int mousex, mousez;
 	public float[] goods = new float[11];
-	private int[] tex_goods = new int[11];
+	public int[] tex_goods = new int[11];
 	private int tex_bmmat, tex_bmliv, tex_bmspc;
 	private int tex_bmliv_0, tex_bmfod_0, tex_bmspc_0, tex_bmspc_1, tex_bmfod_3, tex_bmclo_0;
 	private int tex_smiley;
 	private int goodlimit = 1000;
-	public int goodlimittick = 1000;
+	public int goodlimittick = 1000, thlvl;
 	private DiscMenu bmenu, bmenu_mat, bmenu_liv, bmenu_fod, bmenu_clo, bmenu_spc;
 	public float workersp, workersm, workersq, workersc;
-	public float happiness = 50, dhappiness, foodrate = 0.0001f;
+	public float happiness = 50, dhappiness, foodrate = 0.0001f, clothrate = 0.0001f;
 	public Runnable[][] tech = new Runnable[1][];
 	
 	
@@ -353,6 +353,12 @@ public class VB extends Engine {
 		}
 		if (goods[5] == 0) dhappiness -= 0.008f;
 		else dhappiness += foodrate * 100f - 0.00833333f;
+		if (thlvl == 0) {
+			if (goods[10] > 0) dhappiness += clothrate * 100f - 0.00833333f;
+		} else {
+			if (goods[10] == 0) dhappiness -= 0.008f;
+			else dhappiness += clothrate * 100f - 0.00833333f;
+		}
 	}
 	
 	@Override
@@ -827,7 +833,7 @@ public class VB extends Engine {
 		tech[0][1] = new Runnable() {
 			@Override
 			public void run() {
-				BCityHall.foodsettings = true;
+				BCityHall.ratesettings = true;
 			}
 		};
 		tech[0][2] = new Runnable() {

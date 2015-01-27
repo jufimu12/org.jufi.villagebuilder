@@ -7,6 +7,9 @@ goods:
 	 5 Food
 	 6 Wheat
 	 7 Flour
+	 8 Wool
+	 9 Leather
+	10 Cloth
 buildings:
 	 0 none
 	 1 Living house
@@ -20,6 +23,9 @@ buildings:
 	 9 FarmWheat
 	10 Mill
 	11 Bakery
+	12 FarmSheep
+	13 FarmCow
+	14 Tailor
 save:
 	"b" id x z br <String>extra (Building)
 	"g" id amt (Good)
