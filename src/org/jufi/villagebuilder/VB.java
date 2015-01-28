@@ -53,11 +53,12 @@ public class VB extends Engine {
 	private int tex_bmmat, tex_bmliv, tex_bmspc;
 	private int tex_bmliv_0, tex_bmfod_0, tex_bmspc_0, tex_bmspc_1, tex_bmfod_3, tex_bmclo_0;
 	private int tex_smiley;
-	private int goodlimit = 1000;
-	public int goodlimittick = 1000, thlvl;
+	private int goodlimit = 200;
+	public int goodlimittick = 200, thlvl = 0;
 	private DiscMenu bmenu, bmenu_mat, bmenu_liv, bmenu_fod, bmenu_clo, bmenu_spc;
 	public float workersp, workersm, workersq, workersc;
 	public float happiness = 50, dhappiness, foodrate = 0.0001f, clothrate = 0.0001f;
+	public Runnable[] thlvlup = new Runnable[2];
 	public Runnable[][] tech = new Runnable[1][];
 	
 	
@@ -306,7 +307,7 @@ public class VB extends Engine {
 		workersc = 0;
 		
 		goodlimit = goodlimittick;
-		goodlimittick = 1000;
+		goodlimittick = 200;
 		if (goodlimit > 9999) goodlimit = 9999;
 		
 		if (happiness < -100) happiness = -100;
@@ -499,7 +500,7 @@ public class VB extends Engine {
 	private void initGoods() {
 		goods[0] = 200;
 		goods[1] = 200;
-		goods[2] = 100;
+		goods[2] = 200;
 		goods[3] = 0;
 		goods[4] = 0;
 		goods[5] = 200;
@@ -507,7 +508,7 @@ public class VB extends Engine {
 		goods[7] = 0;
 		goods[8] = 0;
 		goods[9] = 0;
-		goods[10] = 0;
+		goods[10] = 1;
 	}
 	private void initTex() {
 		try {
@@ -542,11 +543,11 @@ public class VB extends Engine {
 			BCityHall.tex_m100 = ResourceLoader.loadTexture("res/img/m100.png");
 			BCityHall.tex_m150 = ResourceLoader.loadTexture("res/img/m150.png");
 			BCityHall.tex_m200 = ResourceLoader.loadTexture("res/img/m200.png");
+			BCityHall.tex_marrow = ResourceLoader.loadTexture("res/img/marrow.png");
 			BStorage.tex_mcrate = tex_bmspc_0;
 			BSchool.tex_locked[0] = tex_goods[2];
 			BSchool.tex_locked[1] = ResourceLoader.loadTexture("res/img/tfoodrate.png");
-			BSchool.tex_locked[2] = tex_bmfod_3;
-			BSchool.tex_locked[3] = tex_goods[10];
+			BSchool.tex_locked[2] = tex_goods[10];
 		} catch (IOException e) {
 			System.err.println("While loading textures:");
 			e.printStackTrace();
@@ -814,29 +815,13 @@ public class VB extends Engine {
 		glEnd();
 	}
 	private void initTech() {
-		tech[0] = new Runnable[4];
-		tech[0][0] = new Runnable() {
+		thlvlup[0] = new Runnable() {
 			@Override
 			public void run() {
-				bmenu_mat.addItem(new DiscMenuItem() {
-					@Override
-					public void render() {
-						renderDynDiscMenuIconWithTexture(tex_goods[2], 4);
-					}
-					@Override
-					public void run() {
-						sb = 4;
-					}
-				});
+				
 			}
 		};
-		tech[0][1] = new Runnable() {
-			@Override
-			public void run() {
-				BCityHall.ratesettings = true;
-			}
-		};
-		tech[0][2] = new Runnable() {
+		thlvlup[1] = new Runnable() {
 			@Override
 			public void run() {
 				bmenu_fod.addItem(new DiscMenuItem() {
@@ -871,7 +856,30 @@ public class VB extends Engine {
 				});
 			}
 		};
-		tech[0][3] = new Runnable() {
+		
+		tech[0] = new Runnable[3];
+		tech[0][0] = new Runnable() {
+			@Override
+			public void run() {
+				bmenu_mat.addItem(new DiscMenuItem() {
+					@Override
+					public void render() {
+						renderDynDiscMenuIconWithTexture(tex_goods[2], 4);
+					}
+					@Override
+					public void run() {
+						sb = 4;
+					}
+				});
+			}
+		};
+		tech[0][1] = new Runnable() {
+			@Override
+			public void run() {
+				BCityHall.ratesettings = true;
+			}
+		};
+		tech[0][2] = new Runnable() {
 			@Override
 			public void run() {
 				bmenu.addItem(new DiscMenuItem() {
@@ -895,6 +903,8 @@ public class VB extends Engine {
 			target = new BufferedWriter(new FileWriter(fc.getSelectedFile()));
 			
 			target.write("s h " + happiness);
+			target.newLine();
+			target.write("s t " + thlvl);
 			target.newLine();
 			for (int i = 0; i < goods.length; i++) {
 				target.write("g " + i + " " + goods[i]);
@@ -943,6 +953,9 @@ public class VB extends Engine {
 					case "h":
 						happiness = Float.parseFloat(args[2]);
 						break;
+					case "t":
+						thlvl = Integer.parseInt(args[2]);
+						break;
 					default:
 							System.out.println("Invalid line in input file:");
 							System.out.println(in);
@@ -955,6 +968,9 @@ public class VB extends Engine {
 			}
 			goods = newgoods;
 			buildings = newbuildings;
+			for (int i = 0; i < thlvl; i++) {
+				thlvlup[i].run();
+			}
 		} catch (IOException e) {
 			System.err.println("Failed to load game");
 			e.printStackTrace();

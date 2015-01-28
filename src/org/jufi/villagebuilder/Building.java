@@ -74,7 +74,10 @@ public abstract class Building {
 			glVertex2f(600, 300);
 			glVertex2f(0, 300);
 		glEnd();
-		if (bfinished) render2d(lmup && Mouse.isButtonDown(0));
+		if (bfinished) {
+			glBindTexture(GL_TEXTURE_2D, ResourceLoader.white);
+			render2d(lmup && Mouse.isButtonDown(0));
+		}
 		else {
 			glColor3f(1, 1, 1);
 			glBindTexture(GL_TEXTURE_2D, tex_mconstruction);
@@ -95,8 +98,11 @@ public abstract class Building {
 			if (bfinished) glTranslatef(x, 0, z);
 			else glTranslatef(x, (float) btimeleft / (float) BUILD_TIME[getID()] * -(float) sizeY[getID()], z);
 			useBR();
-			glCallList(dls[getID()]);
+			glCallList(getDL());
 		glPopMatrix();
+	}
+	protected int getDL() {
+		return dls[getID()];
 	}
 	public final void renderDynContour(int sb, int br) {
 		glColor3f(0, 0.5f, 0);
@@ -206,7 +212,7 @@ public abstract class Building {
 		dls[2]  = Model.getDL("res/obj/BForester.obj");
 		dls[3]  = Model.getDL("res/obj/BQuarry.obj");
 		dls[4]  = Model.getDL("res/obj/BStonecutter.obj");
-		dls[5]  = Model.getDL("res/obj/BCityHall.obj");
+		dls[5]  = Model.getDL("res/obj/BCityHall0.obj");
 		dls[6]  = Model.getDL("res/obj/BAppleFarm.obj");
 		dls[7]  = Model.getDL("res/obj/BStorage.obj");
 		dls[8]  = Model.getDL("res/obj/BSchool.obj");
@@ -236,6 +242,8 @@ public abstract class Building {
 		
 		l_productivity = new Label(tex_mgear, 8, 276, 1, 1, 1);
 		l_workers = new Label(tex_mpeople, 8, 245, 1, 1, 1);
+		BCityHall.dl_ch[0] = dls[5];
+		BCityHall.dl_ch[1] = Model.getDL("res/obj/BCityHall1.obj");
 	}
 	public static Building get(int id, int x, int z, int br) {// TODO on new building
 		switch (id) {

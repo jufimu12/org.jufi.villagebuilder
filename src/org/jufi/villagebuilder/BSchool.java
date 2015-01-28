@@ -7,15 +7,14 @@ import org.jufi.lwjglutil.ResourceLoader;
 import org.lwjgl.input.Mouse;
 
 public class BSchool extends Building {
-	private static boolean[] unlocked = new boolean[4];
-	public static int[] tex_locked = new int[4];
-	private static int[][] cost = new int[4][];
+	private static boolean[] unlocked = new boolean[3];
+	public static int[] tex_locked = new int[3];
+	private static int[][] cost = new int[3][];
 	
 	static {
 		cost[0] = new int[] {25, 100, 0, 0, 0};
 		cost[1] = new int[] {100, 50, 0, 0, 0};
-		cost[2] = new int[] {100, 50, 50, 0, 0};
-		cost[3] = new int[] {200, 50, 0, 0, 0};
+		cost[2] = new int[] {200, 50, 0, 0, 0};
 	}
 	
 	public BSchool(int x, int z, int br) {

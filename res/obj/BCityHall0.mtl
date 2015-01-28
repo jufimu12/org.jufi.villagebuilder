@@ -1,13 +1,7 @@
-newmtl cobblestone
+newmtl diffusecobblestone
 Ns 96.078431
-Ka 0.20 0.20 0.20
-Kd 0.20 0.20 0.20
-Ks 0.00 0.00 0.00
-
-newmtl flag
-Ns 96.078431
-Ka 0.00 0.00 1.00
-Kd 0.00 0.00 1.00
+Ka 0.10 0.10 0.10
+Kd 0.10 0.10 0.10
 Ks 0.10 0.10 0.10
 
 newmtl logs

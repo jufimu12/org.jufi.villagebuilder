@@ -1,11 +1,8 @@
 package org.jufi.villagebuilder;
 
-import static org.lwjgl.opengl.GL11.*;
-
-import org.jufi.lwjglutil.*;
-
 public class BLiving extends Building {
 	private float people;
+	private Label l_people = new Label(tex_mpeople, 8, 276, 1, 1, 1);
 	
 	public BLiving(int x, int z, int br) {
 		super(x, z, br);
@@ -39,15 +36,6 @@ public class BLiving extends Building {
 	
 	@Override
 	protected void render2d(boolean click) {
-		glColor3f(1, 1, 1);
-		glBindTexture(GL_TEXTURE_2D, tex_mpeople);
-		glBegin(GL_QUADS);
-			glTexCoord2f(0, 1); glVertex2f(8, 276);
-			glTexCoord2f(1, 1); glVertex2f(24, 276);
-			glTexCoord2f(1, 0); glVertex2f(24, 292);
-			glTexCoord2f(0, 0); glVertex2f(8, 292);
-		glEnd();
-		glBindTexture(GL_TEXTURE_2D, ResourceLoader.white);
-		Draw.drawString("10 / " + (int) people, 32, 281, 1, 1, 1);
+		l_people.render("10 / " + (int) people);
 	}
 }
