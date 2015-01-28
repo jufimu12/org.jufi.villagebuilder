@@ -1,4 +1,4 @@
-package org.jufi.villagebuilder;
+package org.jufi.villagebuilder;// TODO warning for no street connection
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -263,6 +263,10 @@ public class VB extends Engine {
 			rmtool = true;
 			sb = 0;
 		}
+		if (isKeyDown(KEY_F) && !shiftdown) {
+			rmtool = false;
+			sb = 15;
+		}
 		if (Mouse.isButtonDown(1)) {
 			rmtool = false;
 			sb = 0;
@@ -314,15 +318,20 @@ public class VB extends Engine {
 		if (happiness > 100) happiness = 100;
 		
 		if (!shiftdown && Mouse.isButtonDown(0)) {
-			if (lmup) {
+			if (lmup || sb == 15) {
 				lmup = false;
 				if (rmtool) {
+					boolean recompute = false;
 					Iterator<Building> ib = buildings.iterator();
 					Building b;
 					while (ib.hasNext()) {
 						b = ib.next();
-						if (b.occupies(mousex, mousez) && b.getID() != 5) ib.remove();
+						if (b.occupies(mousex, mousez) && b.getID() != 5) {
+							recompute = true;
+							ib.remove();
+						}
 					}
+					if (recompute) recomputeStreets();
 				}
 				if (sb > 0 && selectionavailable() && Building.canAfford(sb)) {
 					Building b = Building.get(sb, mousex, mousez, br);
@@ -333,6 +342,7 @@ public class VB extends Engine {
 						goods[2] -= Building.cost[sb][2];
 						goods[3] -= Building.cost[sb][3];
 						goods[4] -= Building.cost[sb][4];
+						recomputeStreets();
 					}
 				}
 				if (!rmtool && !shiftdown && sb == 0) {
@@ -984,5 +994,50 @@ public class VB extends Engine {
 			}
 		}
 		Building.takestimetobuild = true;
+	}
+	private void recomputeStreets() {
+		int[][] thnbs = null;// load neighbors
+		for (Building b : buildings) {
+			if (b instanceof BCityHall) {
+				thnbs = b.getNeighbors();
+				break;
+			}
+		}
+		if (thnbs == null) {
+			System.err.println("Error in recomputeStreets: no BCityHall found");
+			return;
+		}
+		for (Building b : buildings) {// copy to streets
+			if (!(b instanceof BStreet)) continue;
+			BStreet s = (BStreet) b;
+			boolean th = false;
+			for (int i = 0; i < 24; i++) {
+				if (s.x == thnbs[i][0] && s.z == thnbs[i][1]) {
+					th = true;
+					break;
+				}
+			}
+			s.th = th;
+		}
+		boolean loop = true;// loop until nothing happens anymore
+		while (loop) {
+			loop = false;
+			for (Building b : buildings) {
+				if (b.th) continue;
+				int[][] nbs = b.getNeighbors();
+				cloop:
+				for (Building c : buildings) {
+					if (!((c instanceof BStreet) && c.th)) continue;
+					nbs = c.getNeighbors();
+					for (int[] i : nbs) {
+						if (b.occupies(i[0], i[1])) {
+							b.th = true;
+							loop = true;
+							break cloop;
+						};
+					}
+				}
+			}
+		}
 	}
 }

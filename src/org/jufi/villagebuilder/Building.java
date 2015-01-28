@@ -19,18 +19,19 @@ int[] sizeX, sizeY, sizeZ, BUILD_TIME, dls, cost
 */
 
 public abstract class Building {
-	public static int[] dls = new int[15];// TODO on new building
-	public static final int[] sizeX =   {0, 4, 4, 4, 4, 6, 9,    4,     5,     7,     6, 4,    9,    9, 4};// TODO on new building
-	public static final float[] sizeY = {0, 3, 3, 3, 6, 6, 4, 4.5f, 4.52f, 2,54f, 8.55f, 4, 1.6f, 1.6f, 3};// TODO on new building
-	public static final int[] sizeZ =   {0, 3, 4, 5, 6, 6, 8,    5,     5,     7,     7, 4,    8,    8, 4};// TODO on new building
-	public static final int[][] cost = new int[15][];// TODO on new building
-	private static final int[] BUILD_TIME = {1, 1000, 1000, 2000, 4000, 240, 4000, 1000, 4000, 2000, 4000, 3000, 1000, 1000, 2000};// TODO on new building
+	public static int[] dls = new int[16];// TODO on new building
+	public static final int[] sizeX =   {0, 4, 4, 4, 4, 6, 9,    4,     5,     7,     6, 4,    9,    9, 4,     1};// TODO on new building
+	public static final float[] sizeY = {0, 3, 3, 3, 6, 6, 4, 4.5f, 4.52f, 2,54f, 8.55f, 4, 1.6f, 1.6f, 3, 0.01f};// TODO on new building
+	public static final int[] sizeZ =   {0, 3, 4, 5, 6, 6, 8,    5,     5,     7,     7, 4,    8,    8, 4,     1};// TODO on new building
+	public static final int[][] cost = new int[16][];// TODO on new building
+	private static final int[] BUILD_TIME = {1, 1000, 1000, 2000, 4000, 240, 4000, 1000, 4000, 2000, 4000, 3000, 1000, 1000, 2000, 1};// TODO on new building
 	public static boolean takestimetobuild = false;// false to instantly build
 	public static int tex_mgear, tex_mpeople, tex_mconstruction;
 	private static Label l_productivity, l_workers;
 	protected int btimeleft;
 	private boolean inactive2d = true, lmup;
 	protected boolean bfinished;
+	public boolean th;
 	protected int x, z, br;
 	
 	public Building(int x, int z, int br) {
@@ -41,6 +42,7 @@ public abstract class Building {
 	}
 	
 	public final boolean run() {
+		if (!th) return false;
 		if (bfinished) {
 			VB.vb.workersm += cost[getID()][5];
 			return tick();
@@ -151,7 +153,7 @@ public abstract class Building {
 		glPopMatrix();
 	}
 	
-	private void useBR() {
+	private final void useBR() {
 		switch (this.br) {
 		case 0:
 			break;
@@ -171,7 +173,7 @@ public abstract class Building {
 			System.err.println("Invalid br for building " + this);
 		}
 	}
-	private void renderContour() {
+	private final void renderContour() {
 		glBegin(GL_LINE_LOOP);
 			glVertex3f(0, 0, 0);
 			glVertex3f(0, 0, sizeZ[getID()]);
@@ -186,9 +188,52 @@ public abstract class Building {
 		glEnd();
 	}
 	
-	protected void renderProductionUI() {
+	protected final void renderProductionUI() {
 		l_productivity.render(String.valueOf((int) (VB.vb.workersq * 100f)));
 		l_workers.render(cost[getID()][5] + " / " + (int) (cost[getID()][5] * VB.vb.workersq));
+	}
+	
+	public final int[][] getNeighbors() {
+		int[][] res = new int[(sizeX[getID()] + sizeZ[getID()]) * 2][];
+		int minx = 0, maxx = 0, minz = 0, maxz = 0;
+		switch (br) {
+		case 0:
+			minx = x;
+			maxx = x + sizeX[getID()] - 1;
+			minz = z;
+			maxz = z + sizeZ[getID()] - 1;
+			break;
+		case 1:
+			minx = x;
+			maxx = x + sizeZ[getID()] - 1;
+			minz = z - sizeX[getID()] + 1;
+			maxz = z;
+		case 2:
+			minx = x - sizeX[getID()] + 1;
+			maxx = x;
+			minz = z - sizeZ[getID()] + 1;
+			maxz = z;
+		case 3:
+			minx = x - sizeZ[getID()] + 1;
+			maxx = x;
+			minz = z;
+			maxz = z + sizeX[getID()] - 1;
+			break;
+		default:
+			System.err.println("Invalid br for building " + this);
+		}
+		int index = 0;
+		for (int i = minx; i <= maxx; i++) {
+			res[index] = new int[] {i, minz - 1};
+			res[index + 1] = new int[] {i, maxz + 1};
+			index += 2;
+		}
+		for (int i = minz; i <= maxz; i++) {
+			res[index] = new int[] {minx - 1, i};
+			res[index + 1] = new int[] {maxx + 1, i};
+			index += 2;
+		}
+		return res;
 	}
 	
 	public final int getX() {
@@ -222,6 +267,7 @@ public abstract class Building {
 		dls[12] = Model.getDL("res/obj/BFarmSheep.obj");
 		dls[13] = Model.getDL("res/obj/BFarmCow.obj");
 		dls[14] = Model.getDL("res/obj/BTailor.obj");
+		dls[15] = Model.getDL("res/obj/BStreet.obj");
 		
 		// {wood, stone, brick, steel, glass}
 		cost[0]  = new int[5];
@@ -239,11 +285,13 @@ public abstract class Building {
 		cost[12] = new int[] {30, 0, 0, 0, 0, 1};
 		cost[13] = new int[] {30, 0, 0, 0, 0, 1};
 		cost[14] = new int[] {50, 30, 20, 0, 0, 4};
+		cost[15] = new int[] {0, 0, 0, 0, 0, 0};
 		
 		l_productivity = new Label(tex_mgear, 8, 276, 1, 1, 1);
 		l_workers = new Label(tex_mpeople, 8, 245, 1, 1, 1);
 		BCityHall.dl_ch[0] = dls[5];
 		BCityHall.dl_ch[1] = Model.getDL("res/obj/BCityHall1.obj");
+		BStreet.dl_notconnected = Model.getDL("res/obj/BStreet1.obj");
 	}
 	public static Building get(int id, int x, int z, int br) {// TODO on new building
 		switch (id) {
@@ -261,6 +309,7 @@ public abstract class Building {
 		case 12: return new BFarmSheep(x, z, br);
 		case 13: return new BFarmCow(x, z, br);
 		case 14: return new BTailor(x, z, br);
+		case 15: return new BStreet(x, z, br);
 		default: return null;
 		}
 	}
@@ -280,6 +329,7 @@ public abstract class Building {
 		case 12: return new BFarmSheep(x, z, br, extra);
 		case 13: return new BFarmCow(x, z, br, extra);
 		case 14: return new BTailor(x, z, br, extra);
+		case 15: return new BStreet(x, z, br, extra);
 		default: return null;
 		}
 	}
