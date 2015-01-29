@@ -1,4 +1,4 @@
-package org.jufi.villagebuilder;// TODO warning for no street connection
+package org.jufi.villagebuilder;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -176,6 +176,10 @@ public class VB extends Engine {
 					b.renderStatContour();
 				}
 			}
+		}
+		glColor3f(1, 1, 0);
+		for (Building b : buildings) {
+			if (!b.th && !(sb == 0 && b instanceof BStreet)) b.renderStatContour();
 		}
 		glLineWidth(1);
 		glPointSize(1);
@@ -398,6 +402,7 @@ public class VB extends Engine {
 		glClearColor(0.53f, 0.81f, 0.92f, 1f);
 		Mouse.getDWheel();
 		buildings.add(Building.get(5, MAP_SIZE / 2, MAP_SIZE / 2, 0));
+		recomputeStreets();
 		System.out.println("Done loading");
 	}
 	
@@ -981,6 +986,7 @@ public class VB extends Engine {
 			for (int i = 0; i < thlvl; i++) {
 				thlvlup[i].run();
 			}
+			recomputeStreets();
 		} catch (IOException e) {
 			System.err.println("Failed to load game");
 			e.printStackTrace();
@@ -994,30 +1000,12 @@ public class VB extends Engine {
 			}
 		}
 		Building.takestimetobuild = true;
+		System.gc();
 	}
 	private void recomputeStreets() {
-		int[][] thnbs = null;// load neighbors
 		for (Building b : buildings) {
-			if (b instanceof BCityHall) {
-				thnbs = b.getNeighbors();
-				break;
-			}
-		}
-		if (thnbs == null) {
-			System.err.println("Error in recomputeStreets: no BCityHall found");
-			return;
-		}
-		for (Building b : buildings) {// copy to streets
-			if (!(b instanceof BStreet)) continue;
-			BStreet s = (BStreet) b;
-			boolean th = false;
-			for (int i = 0; i < 24; i++) {
-				if (s.x == thnbs[i][0] && s.z == thnbs[i][1]) {
-					th = true;
-					break;
-				}
-			}
-			s.th = th;
+			if (b instanceof BCityHall) b.th = true;
+			else b.th = false;
 		}
 		boolean loop = true;// loop until nothing happens anymore
 		while (loop) {
@@ -1027,7 +1015,7 @@ public class VB extends Engine {
 				int[][] nbs = b.getNeighbors();
 				cloop:
 				for (Building c : buildings) {
-					if (!((c instanceof BStreet) && c.th)) continue;
+					if (!(((c instanceof BStreet || c instanceof BCityHall)) && c.th)) continue;
 					nbs = c.getNeighbors();
 					for (int[] i : nbs) {
 						if (b.occupies(i[0], i[1])) {
