@@ -10,6 +10,9 @@ goods:
 	 8 Wool
 	 9 Leather
 	10 Cloth
+	11 Coal
+	12 IronOre
+	13 Steel
 buildings:
 	 0 none
 	 1 Living house
@@ -26,7 +29,12 @@ buildings:
 	12 FarmSheep
 	13 FarmCow
 	14 Tailor
+	15 IronMine
+	16 CoalFactory
+	17 SteelFactory
 save:
 	"b" id x z br <String>extra (Building)
 	"g" id amt (Good)
 	"s" "h" val (Happiness)
+	"s" "t" val (TH Lvl)
+	

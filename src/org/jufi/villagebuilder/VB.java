@@ -48,8 +48,8 @@ public class VB extends Engine {
 	private ArrayList<Building> buildings = new ArrayList<Building>();
 	private int sb, br;
 	public int mousex, mousez;
-	public float[] goods = new float[11];
-	public int[] tex_goods = new int[11];
+	public float[] goods = new float[14];
+	public int[] tex_goods = new int[14];
 	private int tex_bmmat, tex_bmliv, tex_bmspc;
 	private int tex_bmliv_0, tex_bmfod_0, tex_bmspc_0, tex_bmspc_1, tex_bmfod_3, tex_bmclo_0;
 	private int tex_smiley;
