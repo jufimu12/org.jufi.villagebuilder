@@ -19,12 +19,12 @@ int[] sizeX, sizeY, sizeZ, BUILD_TIME, dls, cost
 */
 
 public abstract class Building {
-	public static int[] dls = new int[16];// TODO on new building
-	public static final int[] sizeX =   {0, 4, 4, 4, 4, 6, 9,    4,     5,     7,     6, 4,    9,    9, 4,     1};// TODO on new building
-	public static final float[] sizeY = {0, 3, 3, 3, 6, 6, 4, 4.5f, 4.52f, 2,54f, 8.55f, 4, 1.6f, 1.6f, 3, 0.01f};// TODO on new building
-	public static final int[] sizeZ =   {0, 3, 4, 5, 6, 6, 8,    5,     5,     7,     7, 4,    8,    8, 4,     1};// TODO on new building
-	public static final int[][] cost = new int[16][];// TODO on new building
-	private static final int[] BUILD_TIME = {1, 1000, 1000, 2000, 4000, 240, 4000, 1000, 4000, 2000, 4000, 3000, 1000, 1000, 2000, 1};// TODO on new building
+	public static int[] dls = new int[20];// TODO on new building
+	public static final int[] sizeX =   {0, 4, 4, 4, 4, 6, 9,    4,     5,     7,     6, 4,    9,    9, 4,     1,     4, 8, 4, 12};// TODO on new building
+	public static final float[] sizeY = {0, 3, 3, 3, 6, 6, 4, 4.5f, 4.52f, 2,54f, 8.55f, 4, 1.6f, 1.6f, 3, 0.01f, 2.54f, 3, 8,  7};// TODO on new building
+	public static final int[] sizeZ =   {0, 3, 4, 5, 6, 6, 8,    5,     5,     7,     7, 4,    8,    8, 4,     1,     5, 8, 7, 10};// TODO on new building
+	public static final int[][] cost = new int[20][];// TODO on new building
+	private static final int[] BUILD_TIME = {1, 1000, 1000, 2000, 4000, 240, 4000, 1000, 4000, 2000, 4000, 3000, 1000, 1000, 2000, 1, 2000, 2000, 3000, 8000};// TODO on new building
 	public static boolean takestimetobuild = false;// false to instantly build
 	public static int tex_mgear, tex_mpeople, tex_mconstruction;
 	private static Label l_productivity, l_workers;
@@ -57,16 +57,11 @@ public abstract class Building {
 		lmup = false;
 	}
 	
-	public final void run2d() {
+	public void run2d() {
 		if (inactive2d) return;
-		if (Mouse.isButtonDown(1) || Keyboard.isKeyDown(Keyboard.KEY_SPACE)) {
+		if (Mouse.isButtonDown(1) || Keyboard.isKeyDown(Keyboard.KEY_SPACE) || (Mouse.isButtonDown(0) && lmup && (Mouse.getX() < 1000 || Mouse.getY() > 300))) {
 			inactive2d = true;
 			return;
-		}
-		if (Mouse.isButtonDown(0)) {
-			if (lmup && (Mouse.getX() < 1000 || Mouse.getY() > 300)) {
-				inactive2d = true;
-			}
 		}
 		
 		glColor3f(VB.BGC, VB.BGC, VB.BGC);
@@ -268,6 +263,10 @@ public abstract class Building {
 		dls[13] = Model.getDL("res/obj/BFarmCow.obj");
 		dls[14] = Model.getDL("res/obj/BTailor.obj");
 		dls[15] = Model.getDL("res/obj/BStreet.obj");
+		dls[16] = Model.getDL("res/obj/BMineIron.obj");
+		dls[17] = Model.getDL("res/obj/BCoalFactory.obj");
+		dls[18] = Model.getDL("res/obj/BSteelFactory.obj");
+		dls[19] = Model.getDL("res/obj/BUniversity.obj");
 		
 		// {wood, stone, brick, steel, glass}
 		cost[0]  = new int[5];
@@ -285,7 +284,11 @@ public abstract class Building {
 		cost[12] = new int[] {30, 0, 0, 0, 0, 1};
 		cost[13] = new int[] {30, 0, 0, 0, 0, 1};
 		cost[14] = new int[] {50, 30, 20, 0, 0, 4};
-		cost[15] = new int[] {0, 0, 0, 0, 0, 0};
+		cost[15] = new int[] {1, 0, 0, 0, 0, 0};
+		cost[16] = new int[] {60, 20, 10, 0, 0, 2};
+		cost[17] = new int[] {30, 50, 10, 0, 0, 2};
+		cost[18] = new int[] {30, 50, 50, 0, 0, 6};
+		cost[19] = new int[] {100, 100, 300, 0, 0, 6};
 		
 		l_productivity = new Label(tex_mgear, 8, 276, 1, 1, 1);
 		l_workers = new Label(tex_mpeople, 8, 245, 1, 1, 1);
@@ -310,6 +313,10 @@ public abstract class Building {
 		case 13: return new BFarmCow(x, z, br);
 		case 14: return new BTailor(x, z, br);
 		case 15: return new BStreet(x, z, br);
+		case 16: return new BMineIron(x, z, br);
+		case 17: return new BCoalFactory(x, z, br);
+		case 18: return new BSteelFactory(x, z, br);
+		case 19: return new BUniversity(x, z, br);
 		default: return null;
 		}
 	}
@@ -330,6 +337,10 @@ public abstract class Building {
 		case 13: return new BFarmCow(x, z, br, extra);
 		case 14: return new BTailor(x, z, br, extra);
 		case 15: return new BStreet(x, z, br, extra);
+		case 16: return new BMineIron(x, z, br, extra);
+		case 17: return new BCoalFactory(x, z, br, extra);
+		case 18: return new BSteelFactory(x, z, br, extra);
+		case 19: return new BUniversity(x, z, br, extra);
 		default: return null;
 		}
 	}

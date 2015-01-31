@@ -12,7 +12,6 @@ goods:
 	10 Cloth
 	11 Coal
 	12 IronOre
-	13 Steel
 buildings:
 	 0 none
 	 1 Living house
@@ -29,9 +28,11 @@ buildings:
 	12 FarmSheep
 	13 FarmCow
 	14 Tailor
-	15 IronMine
-	16 CoalFactory
-	17 SteelFactory
+	15 Street
+	16 MineIron
+	17 CoalFactory
+	18 SteelFactory
+	19 University
 save:
 	"b" id x z br <String>extra (Building)
 	"g" id amt (Good)

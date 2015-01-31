@@ -16,7 +16,7 @@ public class BFarmCow extends Building {
 	
 	@Override
 	protected void render2d(boolean click) {
-		
+		renderProductionUI();
 	}
 	
 	@Override

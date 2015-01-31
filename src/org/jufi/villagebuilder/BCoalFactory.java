@@ -1,16 +1,20 @@
 package org.jufi.villagebuilder;
 
-public class BFarmSheep extends Building {
-	public BFarmSheep(int x, int z, int br) {
+public class BCoalFactory extends Building {
+	
+	public BCoalFactory(int x, int z, int br) {
 		super(x, z, br);
 	}
-	public BFarmSheep(int x, int z, int br, String extra) {
+	public BCoalFactory(int x, int z, int br, String extra) {
 		super(x, z, br);
 	}
 	
 	@Override
 	protected boolean tick() {
-		VB.vb.goods[8] += 0.001f * VB.vb.workersq;
+		if (VB.vb.goods[0] >= 0.007f * VB.vb.workersq) {
+			VB.vb.goods[0] -= 0.007f * VB.vb.workersq;
+			VB.vb.goods[11] += 0.0035f * VB.vb.workersq;
+		}
 		return false;
 	}
 	
@@ -21,7 +25,7 @@ public class BFarmSheep extends Building {
 	
 	@Override
 	public int getID() {
-		return 12;
+		return 17;
 	}
 	
 	@Override

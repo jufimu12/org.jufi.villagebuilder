@@ -48,10 +48,10 @@ public class VB extends Engine {
 	private ArrayList<Building> buildings = new ArrayList<Building>();
 	private int sb, br;
 	public int mousex, mousez;
-	public float[] goods = new float[14];
-	public int[] tex_goods = new int[14];
+	public float[] goods = new float[13];
+	public int[] tex_goods = new int[13];
 	private int tex_bmmat, tex_bmliv, tex_bmspc;
-	private int tex_bmliv_0, tex_bmfod_0, tex_bmspc_0, tex_bmspc_1, tex_bmfod_3, tex_bmclo_0;
+	private int tex_bmliv_0, tex_bmfod_0, tex_bmspc_0, tex_bmspc_1, tex_bmspc_2, tex_bmfod_3, tex_bmclo_0;
 	private int tex_smiley;
 	private int goodlimit = 200;
 	public int goodlimittick = 200, thlvl = 0;
@@ -59,12 +59,14 @@ public class VB extends Engine {
 	public float workersp, workersm, workersq, workersc;
 	public float happiness = 50, dhappiness, foodrate = 0.0001f, clothrate = 0.0001f;
 	public Runnable[] thlvlup = new Runnable[2];
-	public Runnable[][] tech = new Runnable[1][];
+	public Runnable[][] tech = new Runnable[2][];
 	
 	
 	@Override// FUNCTIONS
 	protected void render3dRelative() {
-		
+		for (int i = 0; i < 5; i++) {
+			goods[i] = 1000;
+		}
 	}
 	
 	@Override
@@ -514,8 +516,8 @@ public class VB extends Engine {
 	}
 	private void initGoods() {
 		goods[0] = 200;
-		goods[1] = 200;
-		goods[2] = 200;
+		goods[1] = 100;
+		goods[2] = 0;
 		goods[3] = 0;
 		goods[4] = 0;
 		goods[5] = 200;
@@ -523,14 +525,16 @@ public class VB extends Engine {
 		goods[7] = 0;
 		goods[8] = 0;
 		goods[9] = 0;
-		goods[10] = 1;
+		goods[10] = 0;
+		goods[11] = 0;
+		goods[12] = 0;
 	}
 	private void initTex() {
 		try {
 			tex_goods[0] = ResourceLoader.loadTexture("res/img/bmat0.png");
 			tex_goods[1] = ResourceLoader.loadTexture("res/img/bmat1.png");
 			tex_goods[2] = ResourceLoader.loadTexture("res/img/bmat2.png");
-			tex_goods[3] = ResourceLoader.loadTexture("res/img/gsteel.png");
+			tex_goods[3] = ResourceLoader.loadTexture("res/img/bmat3.png");
 			tex_goods[4] = ResourceLoader.loadTexture("res/img/gglass.png");
 			tex_goods[5] = ResourceLoader.loadTexture("res/img/bfod.png");
 			tex_goods[6] = ResourceLoader.loadTexture("res/img/bfod1.png");
@@ -538,6 +542,8 @@ public class VB extends Engine {
 			tex_goods[8] = ResourceLoader.loadTexture("res/img/bclo1.png");
 			tex_goods[9] = ResourceLoader.loadTexture("res/img/bclo2.png");
 			tex_goods[10] = ResourceLoader.loadTexture("res/img/bclo.png");
+			tex_goods[11] = ResourceLoader.loadTexture("res/img/bmat4.png");
+			tex_goods[12] = ResourceLoader.loadTexture("res/img/bmat5.png");
 			
 			tex_bmmat = ResourceLoader.loadTexture("res/img/bmat.png");
 			tex_bmliv = ResourceLoader.loadTexture("res/img/bliv.png");
@@ -547,6 +553,7 @@ public class VB extends Engine {
 			tex_bmfod_3 = ResourceLoader.loadTexture("res/img/bfod3.png");
 			tex_bmspc_0 = ResourceLoader.loadTexture("res/img/bspc0.png");
 			tex_bmspc_1 = ResourceLoader.loadTexture("res/img/bspc1.png");
+			tex_bmspc_2 = ResourceLoader.loadTexture("res/img/bspc2.png");
 			tex_bmclo_0 = ResourceLoader.loadTexture("res/img/bclo0.png");
 			
 			tex_smiley = ResourceLoader.loadTexture("res/img/ssmiley.png");
@@ -563,6 +570,7 @@ public class VB extends Engine {
 			BSchool.tex_locked[0] = tex_goods[2];
 			BSchool.tex_locked[1] = ResourceLoader.loadTexture("res/img/tfoodrate.png");
 			BSchool.tex_locked[2] = tex_goods[10];
+			BUniversity.tex_locked[0] = tex_goods[3];
 		} catch (IOException e) {
 			System.err.println("While loading textures:");
 			e.printStackTrace();
@@ -869,6 +877,16 @@ public class VB extends Engine {
 						sb = 11;
 					}
 				});
+				bmenu_spc.addItem(new DiscMenuItem() {
+					@Override
+					public void render() {
+						renderDynDiscMenuIconWithTexture(tex_bmspc_2, 19);
+					}
+					@Override
+					public void run() {
+						sb = 19;
+					}
+				});
 			}
 		};
 		
@@ -905,6 +923,43 @@ public class VB extends Engine {
 					@Override
 					public void run() {
 						bmenu_clo.active = true;
+					}
+				});
+			}
+		};
+		
+		tech[1] = new Runnable[1];
+		tech[1][0] = new Runnable() {
+			@Override
+			public void run() {
+				bmenu_mat.addItem(new DiscMenuItem() {
+					@Override
+					public void render() {
+						renderDynDiscMenuIconWithTexture(tex_goods[12], 16);
+					}
+					@Override
+					public void run() {
+						sb = 16;
+					}
+				});
+				bmenu_mat.addItem(new DiscMenuItem() {
+					@Override
+					public void render() {
+						renderDynDiscMenuIconWithTexture(tex_goods[11], 17);
+					}
+					@Override
+					public void run() {
+						sb = 17;
+					}
+				});
+				bmenu_mat.addItem(new DiscMenuItem() {
+					@Override
+					public void render() {
+						renderDynDiscMenuIconWithTexture(tex_goods[3], 18);
+					}
+					@Override
+					public void run() {
+						sb = 18;
 					}
 				});
 			}

@@ -5,9 +5,13 @@ public class BStreet extends Building {
 	
 	public BStreet(int x, int z, int br) {
 		super(x, z, br);
+		btimeleft = 0;
+		bfinished = true;
 	}
 	public BStreet(int x, int z, int br, String extra) {
 		super(x, z, br);
+		btimeleft = 0;
+		bfinished = true;
 	}
 	
 	@Override
@@ -34,5 +38,9 @@ public class BStreet extends Building {
 	protected int getDL() {
 		if (th) return dls[getID()];
 		else return dl_notconnected;
+	}
+	@Override
+	public void run2d() {
+		
 	}
 }
