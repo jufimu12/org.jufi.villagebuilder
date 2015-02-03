@@ -36,7 +36,7 @@ public class VB extends Engine {
 	
 	public static void main(String[] main) {
 		vb = new VB();
-		vb.start();// debugging: initial good amount, instant build
+		vb.start();// debugging: 3drelative good amount, instant build
 	}
 	
 	
@@ -48,8 +48,8 @@ public class VB extends Engine {
 	private ArrayList<Building> buildings = new ArrayList<Building>();
 	private int sb, br;
 	public int mousex, mousez;
-	public float[] goods = new float[13];
-	public int[] tex_goods = new int[13];
+	public float[] goods = new float[14];
+	public int[] tex_goods = new int[14];
 	private int tex_bmmat, tex_bmliv, tex_bmspc;
 	private int tex_bmliv_0, tex_bmfod_0, tex_bmspc_0, tex_bmspc_1, tex_bmspc_2, tex_bmfod_3, tex_bmclo_0;
 	private int tex_smiley;
@@ -67,6 +67,7 @@ public class VB extends Engine {
 		for (int i = 0; i < 5; i++) {
 			goods[i] = 1000;
 		}
+		goods[10] = 1;
 	}
 	
 	@Override
@@ -311,13 +312,17 @@ public class VB extends Engine {
 		} else {
 			workersq = workersp / workersm;
 			if (workersq > 1) workersq = 1;
+			if (goods[13] >= 0.00008f * workersm) {
+				goods[13] -= 0.00008f * workersm;
+				workersq *= 1.25f;
+			}
 		}
 		workersp = 0;
 		workersm = 0;
 		workersc = 0;
 		
 		goodlimit = goodlimittick;
-		goodlimittick = 200;
+		goodlimittick = thlvl * 500 + 200;
 		if (goodlimit > 9999) goodlimit = 9999;
 		
 		if (happiness < -100) happiness = -100;
@@ -544,6 +549,7 @@ public class VB extends Engine {
 			tex_goods[10] = ResourceLoader.loadTexture("res/img/bclo.png");
 			tex_goods[11] = ResourceLoader.loadTexture("res/img/bmat4.png");
 			tex_goods[12] = ResourceLoader.loadTexture("res/img/bmat5.png");
+			tex_goods[13] = ResourceLoader.loadTexture("res/img/bspc3.png");
 			
 			tex_bmmat = ResourceLoader.loadTexture("res/img/bmat.png");
 			tex_bmliv = ResourceLoader.loadTexture("res/img/bliv.png");
@@ -571,6 +577,8 @@ public class VB extends Engine {
 			BSchool.tex_locked[1] = ResourceLoader.loadTexture("res/img/tfoodrate.png");
 			BSchool.tex_locked[2] = tex_goods[10];
 			BUniversity.tex_locked[0] = tex_goods[3];
+			BUniversity.tex_locked[1] = tex_bmfod_3;
+			BUniversity.tex_locked[2] = tex_goods[13];
 		} catch (IOException e) {
 			System.err.println("While loading textures:");
 			e.printStackTrace();
@@ -847,36 +855,6 @@ public class VB extends Engine {
 		thlvlup[1] = new Runnable() {
 			@Override
 			public void run() {
-				bmenu_fod.addItem(new DiscMenuItem() {
-					@Override
-					public void render() {
-						renderDynDiscMenuIconWithTexture(tex_goods[6], 9);
-					}
-					@Override
-					public void run() {
-						sb = 9;
-					}
-				});
-				bmenu_fod.addItem(new DiscMenuItem() {
-					@Override
-					public void render() {
-						renderDynDiscMenuIconWithTexture(tex_goods[7], 10);
-					}
-					@Override
-					public void run() {
-						sb = 10;
-					}
-				});
-				bmenu_fod.addItem(new DiscMenuItem() {
-					@Override
-					public void render() {
-						renderDynDiscMenuIconWithTexture(tex_bmfod_3, 11);
-					}
-					@Override
-					public void run() {
-						sb = 11;
-					}
-				});
 				bmenu_spc.addItem(new DiscMenuItem() {
 					@Override
 					public void render() {
@@ -928,7 +906,7 @@ public class VB extends Engine {
 			}
 		};
 		
-		tech[1] = new Runnable[1];
+		tech[1] = new Runnable[3];
 		tech[1][0] = new Runnable() {
 			@Override
 			public void run() {
@@ -960,6 +938,56 @@ public class VB extends Engine {
 					@Override
 					public void run() {
 						sb = 18;
+					}
+				});
+			}
+		};
+		tech[1][1] = new Runnable() {
+			@Override
+			public void run() {
+				bmenu_fod.addItem(new DiscMenuItem() {
+					@Override
+					public void render() {
+						renderDynDiscMenuIconWithTexture(tex_goods[6], 9);
+					}
+					@Override
+					public void run() {
+						sb = 9;
+					}
+				});
+				bmenu_fod.addItem(new DiscMenuItem() {
+					@Override
+					public void render() {
+						renderDynDiscMenuIconWithTexture(tex_goods[7], 10);
+					}
+					@Override
+					public void run() {
+						sb = 10;
+					}
+				});
+				bmenu_fod.addItem(new DiscMenuItem() {
+					@Override
+					public void render() {
+						renderDynDiscMenuIconWithTexture(tex_bmfod_3, 11);
+					}
+					@Override
+					public void run() {
+						sb = 11;
+					}
+				});
+			}
+		};
+		tech[1][2] = new Runnable() {
+			@Override
+			public void run() {
+				bmenu_spc.addItem(new DiscMenuItem() {
+					@Override
+					public void render() {
+						renderDynDiscMenuIconWithTexture(tex_goods[13], 20);
+					}
+					@Override
+					public void run() {
+						sb = 20;
 					}
 				});
 			}

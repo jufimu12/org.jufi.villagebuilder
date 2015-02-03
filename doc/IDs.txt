@@ -12,6 +12,7 @@ goods:
 	10 Cloth
 	11 Coal
 	12 IronOre
+	13 Tools
 buildings:
 	 0 none
 	 1 Living house
@@ -33,6 +34,7 @@ buildings:
 	17 CoalFactory
 	18 SteelFactory
 	19 University
+	20 ToolFactory
 save:
 	"b" id x z br <String>extra (Building)
 	"g" id amt (Good)

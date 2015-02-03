@@ -19,12 +19,12 @@ int[] sizeX, sizeY, sizeZ, BUILD_TIME, dls, cost
 */
 
 public abstract class Building {
-	public static int[] dls = new int[20];// TODO on new building
-	public static final int[] sizeX =   {0, 4, 4, 4, 4, 6, 9,    4,     5,     7,     6, 4,    9,    9, 4,     1,     4, 8, 4, 12};// TODO on new building
-	public static final float[] sizeY = {0, 3, 3, 3, 6, 6, 4, 4.5f, 4.52f, 2,54f, 8.55f, 4, 1.6f, 1.6f, 3, 0.01f, 2.54f, 3, 8,  7};// TODO on new building
-	public static final int[] sizeZ =   {0, 3, 4, 5, 6, 6, 8,    5,     5,     7,     7, 4,    8,    8, 4,     1,     5, 8, 7, 10};// TODO on new building
-	public static final int[][] cost = new int[20][];// TODO on new building
-	private static final int[] BUILD_TIME = {1, 1000, 1000, 2000, 4000, 240, 4000, 1000, 4000, 2000, 4000, 3000, 1000, 1000, 2000, 1, 2000, 2000, 3000, 8000};// TODO on new building
+	public static int[] dls = new int[21];// TODO on new building
+	public static final int[] sizeX =   {0, 4, 4, 4, 4, 6, 9,    4,     5,     7,     6, 4,    9,    9, 4,     1,     4, 8, 4, 12, 4};// TODO on new building
+	public static final float[] sizeY = {0, 3, 3, 3, 6, 6, 4, 4.5f, 4.52f, 2,54f, 8.55f, 4, 1.6f, 1.6f, 3, 0.01f, 2.54f, 3, 8,  7, 3};// TODO on new building
+	public static final int[] sizeZ =   {0, 3, 4, 5, 6, 6, 8,    5,     5,     7,     7, 4,    8,    8, 4,     1,     5, 8, 7, 10, 4};// TODO on new building
+	public static final int[][] cost = new int[21][];// TODO on new building
+	private static final int[] BUILD_TIME = {1, 1000, 1000, 2000, 4000, 240, 4000, 1000, 4000, 2000, 4000, 3000, 1000, 1000, 2000, 1, 2000, 2000, 3000, 8000, 4000};// TODO on new building
 	public static boolean takestimetobuild = false;// false to instantly build
 	public static int tex_mgear, tex_mpeople, tex_mconstruction;
 	private static Label l_productivity, l_workers;
@@ -267,6 +267,7 @@ public abstract class Building {
 		dls[17] = Model.getDL("res/obj/BCoalFactory.obj");
 		dls[18] = Model.getDL("res/obj/BSteelFactory.obj");
 		dls[19] = Model.getDL("res/obj/BUniversity.obj");
+		dls[20] = Model.getDL("res/obj/BToolFactory.obj");
 		
 		// {wood, stone, brick, steel, glass}
 		cost[0]  = new int[5];
@@ -288,7 +289,8 @@ public abstract class Building {
 		cost[16] = new int[] {60, 20, 10, 0, 0, 2};
 		cost[17] = new int[] {30, 50, 10, 0, 0, 2};
 		cost[18] = new int[] {30, 50, 50, 0, 0, 6};
-		cost[19] = new int[] {100, 100, 300, 0, 0, 6};
+		cost[19] = new int[] {100, 100, 300, 0, 0, 0};
+		cost[20] = new int[] {70, 30, 50, 10, 0, 4};
 		
 		l_productivity = new Label(tex_mgear, 8, 276, 1, 1, 1);
 		l_workers = new Label(tex_mpeople, 8, 245, 1, 1, 1);
@@ -317,6 +319,7 @@ public abstract class Building {
 		case 17: return new BCoalFactory(x, z, br);
 		case 18: return new BSteelFactory(x, z, br);
 		case 19: return new BUniversity(x, z, br);
+		case 20: return new BToolFactory(x, z, br);
 		default: return null;
 		}
 	}
@@ -341,6 +344,7 @@ public abstract class Building {
 		case 17: return new BCoalFactory(x, z, br, extra);
 		case 18: return new BSteelFactory(x, z, br, extra);
 		case 19: return new BUniversity(x, z, br, extra);
+		case 20: return new BToolFactory(x, z, br, extra);
 		default: return null;
 		}
 	}
