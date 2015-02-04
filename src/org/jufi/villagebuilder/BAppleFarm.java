@@ -11,7 +11,7 @@ public class BAppleFarm extends Building {
 	
 	@Override
 	protected boolean tick() {
-		VB.vb.goods[5] += 0.001f * VB.vb.workersq;
+		VB.vb.goods[5] += 0.007f * VB.vb.workersq;
 		return false;
 	}
 	

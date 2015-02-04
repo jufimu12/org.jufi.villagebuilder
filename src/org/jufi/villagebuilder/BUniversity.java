@@ -57,6 +57,9 @@ public class BUniversity extends Building {
 					glColor3f(1, 1, 1);
 					
 					if (click && cost[i][0] <= VB.vb.goods[0] && cost[i][1] <= VB.vb.goods[1] && cost[i][2] <= VB.vb.goods[2] && cost[i][3] <= VB.vb.goods[3] && cost[i][4] <= VB.vb.goods[4]) {
+						for (int j = 0; j < 5; j++) {
+							VB.vb.goods[j] -= cost[i][j];
+						}
 						unlocked[i] = true;
 						VB.vb.tech[1][i].run();
 					}

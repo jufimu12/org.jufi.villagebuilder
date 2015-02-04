@@ -10,9 +10,9 @@ public class BMill extends Building {
 	
 	@Override
 	protected boolean tick() {
-		if (VB.vb.goods[6] >= 0.006f * VB.vb.workersq) {
-			VB.vb.goods[6] -= 0.006f * VB.vb.workersq;
-			VB.vb.goods[7] += 0.006f * VB.vb.workersq;
+		if (VB.vb.goods[6] >= 0.042f * VB.vb.workersq) {
+			VB.vb.goods[6] -= 0.042f * VB.vb.workersq;
+			VB.vb.goods[7] += 0.042f * VB.vb.workersq;
 		}
 		return false;
 	}

@@ -10,10 +10,10 @@ public class BTailor extends Building {
 	
 	@Override
 	protected boolean tick() {
-		if (VB.vb.goods[8] >= 0.003f * VB.vb.workersq && VB.vb.goods[9] >= 0.003f * VB.vb.workersq) {
-			VB.vb.goods[8] -= 0.003f * VB.vb.workersq;
-			VB.vb.goods[9] -= 0.003f * VB.vb.workersq;
-			VB.vb.goods[10] += 0.003f * VB.vb.workersq;
+		if (VB.vb.goods[8] >= 0.021f * VB.vb.workersq && VB.vb.goods[9] >= 0.021f * VB.vb.workersq) {
+			VB.vb.goods[8] -= 0.021f * VB.vb.workersq;
+			VB.vb.goods[9] -= 0.021f * VB.vb.workersq;
+			VB.vb.goods[10] += 0.021f * VB.vb.workersq;
 		}
 		return false;
 	}

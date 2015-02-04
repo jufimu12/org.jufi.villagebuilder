@@ -25,7 +25,7 @@ public abstract class Building {
 	public static final int[] sizeZ =   {0, 3, 4, 5, 6, 6, 8,    5,     5,     7,     7, 4,    8,    8, 4,     1,     5, 8, 7, 10, 4};// TODO on new building
 	public static final int[][] cost = new int[21][];// TODO on new building
 	private static final int[] BUILD_TIME = {1, 1000, 1000, 2000, 4000, 240, 4000, 1000, 4000, 2000, 4000, 3000, 1000, 1000, 2000, 1, 2000, 2000, 3000, 8000, 4000};// TODO on new building
-	public static boolean takestimetobuild = false;// false to instantly build
+	public static boolean takestimetobuild = true;// false to instantly build
 	public static int tex_mgear, tex_mpeople, tex_mconstruction;
 	private static Label l_productivity, l_workers;
 	protected int btimeleft;

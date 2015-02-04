@@ -10,7 +10,7 @@ public class BFarmWheat extends Building {
 	
 	@Override
 	protected boolean tick() {
-		VB.vb.goods[6] += 0.003f * VB.vb.workersq;
+		VB.vb.goods[6] += 0.021f * VB.vb.workersq;
 		return false;
 	}
 	

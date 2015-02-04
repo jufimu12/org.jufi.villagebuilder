@@ -10,7 +10,7 @@ public class BFarmSheep extends Building {
 	
 	@Override
 	protected boolean tick() {
-		VB.vb.goods[8] += 0.001f * VB.vb.workersq;
+		VB.vb.goods[8] += 0.007f * VB.vb.workersq;
 		return false;
 	}
 	

@@ -83,16 +83,16 @@ public class BCityHall extends Building {
 			cloth_100.render();
 			cloth_150.render();
 			cloth_200.render();
-			if (click && food_0.mouseover()) VB.vb.foodrate = 0f;
-			if (click && food_50.mouseover()) VB.vb.foodrate = 0.00005f;
-			if (click && food_100.mouseover()) VB.vb.foodrate = 0.0001f;
-			if (click && food_150.mouseover()) VB.vb.foodrate = 0.00015f;
-			if (click && food_200.mouseover()) VB.vb.foodrate = 0.0002f;
-			if (click && cloth_0.mouseover()) VB.vb.clothrate = 0f;
-			if (click && cloth_50.mouseover()) VB.vb.clothrate = 0.00005f;
-			if (click && cloth_100.mouseover()) VB.vb.clothrate = 0.0001f;
-			if (click && cloth_150.mouseover()) VB.vb.clothrate = 0.00015f;
-			if (click && cloth_200.mouseover()) VB.vb.clothrate = 0.0002f;
+			if (click && food_0.mouseover()) VB.vb.foodrate = 0;
+			if (click && food_50.mouseover()) VB.vb.foodrate = 1;
+			if (click && food_100.mouseover()) VB.vb.foodrate = 2;
+			if (click && food_150.mouseover()) VB.vb.foodrate = 3;
+			if (click && food_200.mouseover()) VB.vb.foodrate = 4;
+			if (click && cloth_0.mouseover()) VB.vb.clothrate = 0;
+			if (click && cloth_50.mouseover()) VB.vb.clothrate = 1;
+			if (click && cloth_100.mouseover()) VB.vb.clothrate = 2;
+			if (click && cloth_150.mouseover()) VB.vb.clothrate = 3;
+			if (click && cloth_200.mouseover()) VB.vb.clothrate = 4;
 		}
 	}
 	

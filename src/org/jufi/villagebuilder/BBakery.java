@@ -10,9 +10,9 @@ public class BBakery extends Building {
 	
 	@Override
 	protected boolean tick() {
-		if (VB.vb.goods[7] >= 0.003f * VB.vb.workersq) {
-			VB.vb.goods[7] -= 0.003f * VB.vb.workersq;
-			VB.vb.goods[5] += 0.003f * VB.vb.workersq;
+		if (VB.vb.goods[7] >= 0.021f * VB.vb.workersq) {
+			VB.vb.goods[7] -= 0.021f * VB.vb.workersq;
+			VB.vb.goods[5] += 0.021f * VB.vb.workersq;
 		}
 		return false;
 	}

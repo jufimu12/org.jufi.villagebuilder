@@ -16,8 +16,8 @@ public class BLiving extends Building {
 	protected boolean tick() {
 		VB.vb.workersc += 10;
 		VB.vb.workersp += (int) people;
-		VB.vb.goods[5] -= Math.floor(people) * VB.vb.foodrate;
-		VB.vb.goods[10] -= Math.floor(people) * VB.vb.clothrate;
+		VB.vb.goods[5] -= Math.floor(people) * VB.vb.foodrate * 0.00035f;
+		VB.vb.goods[10] -= Math.floor(people) * VB.vb.clothrate * 0.00035f;
 		people += VB.vb.happiness / 100000f;
 		if (people > 10) people = 10;
 		if (people < 0) people = 0;

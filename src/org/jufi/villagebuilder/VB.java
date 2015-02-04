@@ -31,12 +31,13 @@ public class VB extends Engine {
 	public static final int GRASS_RES = 512;
 	public static final float CAM_SPEED = 0.03f;
 	public static final float BGC = 1f / 16f;
+	public static final float GHAPPINESS_EXP_BASE = 0.999769f;
 	
 	public static VB vb;
 	
 	public static void main(String[] main) {
 		vb = new VB();
-		vb.start();// debugging: 3drelative good amount, instant build
+		vb.start();
 	}
 	
 	
@@ -53,21 +54,19 @@ public class VB extends Engine {
 	private int tex_bmmat, tex_bmliv, tex_bmspc;
 	private int tex_bmliv_0, tex_bmfod_0, tex_bmspc_0, tex_bmspc_1, tex_bmspc_2, tex_bmfod_3, tex_bmclo_0;
 	private int tex_smiley;
-	private int goodlimit = 200;
-	public int goodlimittick = 200, thlvl = 0;
+	private int goodlimit = 500;
+	public int goodlimittick = 500, thlvl = 0;
 	private DiscMenu bmenu, bmenu_mat, bmenu_liv, bmenu_fod, bmenu_clo, bmenu_spc;
 	public float workersp, workersm, workersq, workersc;
-	public float happiness = 50, dhappiness, foodrate = 0.0001f, clothrate = 0.0001f;
+	public float happiness = 50, ghappiness;
+	public int foodrate = 2, clothrate = 2;
 	public Runnable[] thlvlup = new Runnable[2];
 	public Runnable[][] tech = new Runnable[2][];
 	
 	
 	@Override// FUNCTIONS
 	protected void render3dRelative() {
-		for (int i = 0; i < 5; i++) {
-			goods[i] = 1000;
-		}
-		goods[10] = 1;
+		
 	}
 	
 	@Override
@@ -221,16 +220,12 @@ public class VB extends Engine {
 			movex += 64;
 		}
 		Draw.drawString("&$c100100000" + (int) workersc + "&$c100100100 / &$c000100000" + (int) workersp + "&$c100100100 / &$c100000000" + (int) workersm + "&$c100100100 / " + (int) (workersq * 100f), 457, 835, 1, 1, 1);
-		if (sb > 0) Draw.drawString(Building.cost[sb][5], 457, 810, 1, 1, 1);
+		if (sb > 0) Draw.drawStringBG(" " + Building.cost[sb][5] + " ", 457, 810, 1, 1, 1);
 		Draw.drawString(Math.floor(goodlimit / 100f) / 10f + "k", 649, 835, 1, 1, 1);
 		float hr = 1, hg = 1;
 		if (happiness >= 0) hr -= happiness / 100f;
 		else hg += happiness / 100f;
-		if (dhappiness > 0) Draw.drawString((int) happiness + "&$c100100100 / &$c000100000" + Math.floor(dhappiness * 6000f) / 100f, 713, 835, hr, hg, 0);
-		else if (dhappiness < 0) Draw.drawString((int) happiness + "&$c100100100 / &$c100000000" + Math.floor(dhappiness * 6000f) / 100f, 713, 835, hr, hg, 0);
-		else Draw.drawString((int) happiness + "&$c100100100 / " + Math.floor(dhappiness * 6000f) / 100f, 713, 835, hr, hg, 0);
-		happiness += dhappiness;
-		dhappiness = 0;
+		Draw.drawString((int) happiness, 713, 835, hr, hg, 0);
 		
 		glPushMatrix();
 			glTranslatef(1000, 0, 0);
@@ -307,79 +302,85 @@ public class VB extends Engine {
 	
 	@Override
 	protected void tick() {
-		if (workersm == 0) {
-			workersq = 1;
-		} else {
-			workersq = workersp / workersm;
-			if (workersq > 1) workersq = 1;
-			if (goods[13] >= 0.00008f * workersm) {
-				goods[13] -= 0.00008f * workersm;
-				workersq *= 1.25f;
+		int loops = 1;
+		if (isKeyDown(KEY_F7)) loops = 4;
+		for (int loopno = 0; loopno < loops; loopno++) {
+			if (workersm == 0) {
+				workersq = 1;
+			} else {
+				workersq = workersp / workersm;
+				if (workersq > 1) workersq = 1;
+				if (goods[13] >= 0.00008f * workersm) {
+					goods[13] -= 0.00008f * workersm;
+					workersq *= 1.25f;
+				}
 			}
-		}
-		workersp = 0;
-		workersm = 0;
-		workersc = 0;
-		
-		goodlimit = goodlimittick;
-		goodlimittick = thlvl * 500 + 200;
-		if (goodlimit > 9999) goodlimit = 9999;
-		
-		if (happiness < -100) happiness = -100;
-		if (happiness > 100) happiness = 100;
-		
-		if (!shiftdown && Mouse.isButtonDown(0)) {
-			if (lmup || sb == 15) {
-				lmup = false;
-				if (rmtool) {
-					boolean recompute = false;
-					Iterator<Building> ib = buildings.iterator();
-					Building b;
-					while (ib.hasNext()) {
-						b = ib.next();
-						if (b.occupies(mousex, mousez) && b.getID() != 5) {
-							recompute = true;
-							ib.remove();
+			workersp = 0;
+			workersm = 0;
+			workersc = 0;
+			
+			goodlimit = goodlimittick;
+			goodlimittick = thlvl * 500 + 500;
+			if (goodlimit > 9999) goodlimit = 9999;
+			
+			if (happiness < -100) happiness = -100;
+			if (happiness > 100) happiness = 100;
+			
+			if (!shiftdown && Mouse.isButtonDown(0)) {
+				if (lmup || sb == 15) {
+					lmup = false;
+					if (rmtool) {
+						boolean recompute = false;
+						Iterator<Building> ib = buildings.iterator();
+						Building b;
+						while (ib.hasNext()) {
+							b = ib.next();
+							if (b.occupies(mousex, mousez) && b.getID() != 5) {
+								recompute = true;
+								ib.remove();
+							}
+						}
+						if (recompute) recomputeStreets();
+					}
+					if (sb > 0 && selectionavailable() && Building.canAfford(sb)) {
+						Building b = Building.get(sb, mousex, mousez, br);
+						if (b != null) {
+							buildings.add(b);
+							goods[0] -= Building.cost[sb][0];
+							goods[1] -= Building.cost[sb][1];
+							goods[2] -= Building.cost[sb][2];
+							goods[3] -= Building.cost[sb][3];
+							goods[4] -= Building.cost[sb][4];
+							recomputeStreets();
 						}
 					}
-					if (recompute) recomputeStreets();
-				}
-				if (sb > 0 && selectionavailable() && Building.canAfford(sb)) {
-					Building b = Building.get(sb, mousex, mousez, br);
-					if (b != null) {
-						buildings.add(b);
-						goods[0] -= Building.cost[sb][0];
-						goods[1] -= Building.cost[sb][1];
-						goods[2] -= Building.cost[sb][2];
-						goods[3] -= Building.cost[sb][3];
-						goods[4] -= Building.cost[sb][4];
-						recomputeStreets();
+					if (!rmtool && !shiftdown && sb == 0) {
+						for (Building b : buildings) {
+							if (b.occupies(mousex, mousez)) b.onMouseClick();
+						}
 					}
 				}
-				if (!rmtool && !shiftdown && sb == 0) {
-					for (Building b : buildings) {
-						if (b.occupies(mousex, mousez)) b.onMouseClick();
-					}
-				}
+			} else lmup = true;
+			
+			Iterator<Building> ib = buildings.iterator();
+			while (ib.hasNext()) {
+				if (ib.next().run()) ib.remove();
 			}
-		} else lmup = true;
-		
-		Iterator<Building> ib = buildings.iterator();
-		while (ib.hasNext()) {
-			if (ib.next().run()) ib.remove();
-		}
-		
-		for (int i = 0; i < goods.length; i++) {
-			if (goods[i] > goodlimit) goods[i] = goodlimit;
-			if (goods[i] < 0) goods[i] = 0;
-		}
-		if (goods[5] == 0) dhappiness -= 0.008f;
-		else dhappiness += foodrate * 100f - 0.00833333f;
-		if (thlvl == 0) {
-			if (goods[10] > 0) dhappiness += clothrate * 100f - 0.00833333f;
-		} else {
-			if (goods[10] == 0) dhappiness -= 0.008f;
-			else dhappiness += clothrate * 100f - 0.00833333f;
+			
+			for (int i = 0; i < goods.length; i++) {
+				if (goods[i] > goodlimit) goods[i] = goodlimit;
+				if (goods[i] < 0) goods[i] = 0;
+			}
+			if (goods[5] == 0) ghappiness -= 100f;
+			else ghappinessswitchstatement(foodrate);
+			if (thlvl == 0) {
+				if (goods[10] > 0) ghappinessswitchstatementoptional(clothrate);
+			} else {
+				if (goods[10] == 0) ghappiness -= 100f;
+				else ghappinessswitchstatement(clothrate);
+			}
+			happiness = GHAPPINESS_EXP_BASE * (happiness - ghappiness) + ghappiness;
+			ghappiness = 0;
 		}
 	}
 	
@@ -520,8 +521,8 @@ public class VB extends Engine {
 		mousez = (int) Math.floor(cam.getTy() / -ray.y * ray.z + cam.getTz());// y = 0
 	}
 	private void initGoods() {
-		goods[0] = 200;
-		goods[1] = 100;
+		goods[0] = 400;
+		goods[1] = 150;
 		goods[2] = 0;
 		goods[3] = 0;
 		goods[4] = 0;
@@ -1109,6 +1110,47 @@ public class VB extends Engine {
 					}
 				}
 			}
+		}
+	}
+	private void ghappinessswitchstatement(int arg0) {
+		switch (arg0) {
+		case 0:
+			ghappiness -= 100f;
+			break;
+		case 1:
+			ghappiness -= 25;
+			break;
+		case 2:
+			ghappiness += 50;
+			break;
+		case 3:
+			ghappiness += 75;
+			break;
+		case 4:
+			ghappiness += 100;
+			break;
+		default:
+			System.err.println("Default option reached in foodrate switch statement");
+		}
+	}
+	private void ghappinessswitchstatementoptional(int arg0) {
+		switch (arg0) {
+		case 0:
+			break;
+		case 1:
+			ghappiness += 25;
+			break;
+		case 2:
+			ghappiness += 50;
+			break;
+		case 3:
+			ghappiness += 75;
+			break;
+		case 4:
+			ghappiness += 100;
+			break;
+		default:
+			System.err.println("Default option reached in foodrate switch statement");
 		}
 	}
 }
