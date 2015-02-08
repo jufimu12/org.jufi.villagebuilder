@@ -121,7 +121,6 @@ public class Model implements Renderable {
 		for (int i = 0; i < cmds.size(); i++) {
 			commands[i] = cmds.get(i);
 		}
-		System.gc();
 	}
 
 	public void render() {

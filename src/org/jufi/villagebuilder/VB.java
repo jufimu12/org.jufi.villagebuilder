@@ -220,7 +220,7 @@ public class VB extends Engine {
 			movex += 64;
 		}
 		Draw.drawString("&$c100100000" + (int) workersc + "&$c100100100 / &$c000100000" + (int) workersp + "&$c100100100 / &$c100000000" + (int) workersm + "&$c100100100 / " + (int) (workersq * 100f), 457, 835, 1, 1, 1);
-		if (sb > 0) Draw.drawStringBG(" " + Building.cost[sb][5] + " ", 457, 810, 1, 1, 1);
+		if (sb > 0) Draw.drawStringBG(Building.cost[sb][5], 457, 810, 1, 1, 1);
 		Draw.drawString(Math.floor(goodlimit / 100f) / 10f + "k", 649, 835, 1, 1, 1);
 		float hr = 1, hg = 1;
 		if (happiness >= 0) hr -= happiness / 100f;

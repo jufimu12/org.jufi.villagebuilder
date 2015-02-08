@@ -526,10 +526,10 @@ public class Draw {
 	public static void drawStringBG(String s, int x, int y, float r, float g, float b) {
 		glColor3f(0, 0, 0);
 		glBegin(GL_QUADS);
-			glVertex2f(x, y + 10);
-			glVertex2f(x, y - 1);
-			glVertex2f(x + 8 * s.length(), y - 1);
-			glVertex2f(x + 8 * s.length(), y + 10);
+			glVertex2f(x - 5, y + 10);
+			glVertex2f(x - 5, y - 2);
+			glVertex2f(x + 8 * s.length() + 5, y - 2);
+			glVertex2f(x + 8 * s.length() + 5, y + 10);
 		glEnd();
 		drawString(s, x, y, r, g, b);
 	}
