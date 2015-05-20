@@ -121,6 +121,22 @@ public class ResourceLoader {
 		
 		return new int[] {shaderProgram, vertexShader, fragmentShader};
 	}
+	public static int[] loadShader(StringBuilder vertexShaderSource, StringBuilder fragmentShaderSource) {
+		int shaderProgram = glCreateProgram();
+		int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+		int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+		
+		glShaderSource(vertexShader,  vertexShaderSource);
+		glCompileShader(vertexShader);
+		glShaderSource(fragmentShader, fragmentShaderSource);
+		glCompileShader(fragmentShader);
+		glAttachShader(shaderProgram, vertexShader);
+		glAttachShader(shaderProgram, fragmentShader);
+		glLinkProgram(shaderProgram);
+		glValidateProgram(shaderProgram);
+		
+		return new int[] {shaderProgram, vertexShader, fragmentShader};
+	}
 	
 	
 	
